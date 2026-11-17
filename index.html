@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSC 2027 Science — ডিজিটাল বোর্ড এনালাইসিস লাইব্রেরি</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-canvas: #ebe7de;
+    --bg-paper: #fffdf8;
+    --bg-panel: #ffffff;
+    --navy-deep: #0b132b;
+    --navy-mid: #1c2541;
+    --gold-rich: #b45309;
+    --gold-bright: #d97706;
+    --gold-soft: #fef3c7;
+    --text-ink: #1e293b;
+    --text-soft: #475569;
+
+    --c-mcq: #dc2626;
+    --bg-mcq: rgba(220, 38, 38, 0.08);
+    --c-sq: #059669;
+    --bg-sq: rgba(5, 150, 105, 0.09);
+    --c-cq: #d97706;
+    --bg-cq: rgba(217, 119, 6, 0.13);
+
+    --font-scale: 1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Hind Siliguri', sans-serif;
+    background: var(--bg-canvas);
+    background-image: radial-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 0);
+    background-size: 22px 22px;
+    color: var(--text-ink);
+    line-height: 1.8;
+    overflow-x: hidden;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ================= HOME PORTAL VIEW ================= */
+  .hero {
+    background: linear-gradient(135deg, #0b132b 0%, #1c2541 65%, #312012 100%);
+    color: #fff;
+    padding: 34px 18px 28px;
+    border-bottom: 4px solid var(--gold-bright);
+    text-align: center;
+  }
+  .hero-inner { max-width: 1050px; margin: 0 auto; }
+  .pill {
+    display: inline-block;
+    background: rgba(251, 191, 36, 0.16);
+    border: 1px solid #fbbf24;
+    color: #fde68a;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .hero h1 { font-size: clamp(1.45rem, 3.5vw, 2.2rem); font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .hero p { font-size: 0.94rem; color: #cbd5e1; max-width: 680px; margin: 0 auto 14px; }
+
+  .guide-strip { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+  .g-chip {
+    background: rgba(255,255,255,0.09);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .sw-red { background: #ef4444; }
+  .sw-green { background: #10b981; }
+  .sw-amber { background: #f59e0b; }
+
+  .portal-container { max-width: 1120px; margin: 22px auto 50px; padding: 0 16px; }
+  .portal-controls {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-bottom: 20px;
+  }
+  .sub-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
+  .stab {
+    border: 1px solid #cbd5e1; background: #fff; color: #334155;
+    padding: 6px 14px; border-radius: 999px; font-family: inherit;
+    font-size: 0.84rem; font-weight: 700; cursor: pointer; transition: 0.15s;
+  }
+  .stab.active { background: var(--navy-deep); color: #fde68a; border-color: var(--navy-deep); }
+  .portal-search {
+    flex: 1 1 230px; max-width: 320px; padding: 8px 14px;
+    border: 1px solid #cbd5e1; border-radius: 999px; font-family: inherit; font-size: 0.86rem; background: #fff;
+  }
+
+  .portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 16px;
+  }
+  .p-card {
+    background: #fff; border: 1px solid #dfd8c8; border-radius: 14px; padding: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .p-card:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(15, 23, 42, 0.1); }
+  .p-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+  .sub-badge {
+    font-size: 0.74rem; font-weight: 700; padding: 3px 10px; border-radius: 6px;
+    background: var(--gold-soft); color: #92400e;
+  }
+  .status-live {
+    font-size: 0.72rem; font-weight: 700; color: #047857; background: #d1fae5;
+    padding: 2px 9px; border-radius: 999px;
+  }
+  .status-soon {
+    font-size: 0.72rem; font-weight: 700; color: #64748b; background: #f1f5f9;
+    padding: 2px 9px; border-radius: 999px;
+  }
+  .p-card h2 { font-size: 1.12rem; color: var(--navy-deep); margin-bottom: 5px; line-height: 1.4; }
+  .p-card p { font-size: 0.85rem; color: var(--text-soft); margin-bottom: 14px; line-height: 1.6; }
+  .p-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .m-pill {
+    font-size: 0.73rem; font-weight: 600; padding: 2px 8px; border-radius: 5px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+  }
+  .open-btn {
+    width: 100%; border: none; cursor: pointer; font-family: inherit;
+    background: linear-gradient(135deg, #0b132b, #1c2541); color: #fde68a;
+    font-weight: 700; font-size: 0.9rem; padding: 10px 14px; border-radius: 10px;
+  }
+  .open-btn:hover { filter: brightness(1.12); }
+  .open-btn.disabled { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
+  .portal-footer {
+    text-align: center; font-size: 0.82rem; color: var(--text-soft);
+    padding: 18px 16px 32px; border-top: 1px solid #dfd8c8; max-width: 1120px; margin: 0 auto;
+  }
+
+  /* ================= CHAPTER VIEW (PRATYUPAKAR) ================= */
+  .topbar {
+    position: relative;
+    background: linear-gradient(125deg, #0b132b 0%, #1c2541 65%, #2b1d12 100%);
+    color: #fff;
+    padding: 14px 20px;
+    border-bottom: 3px solid var(--gold-bright);
+    box-shadow: 0 6px 24px rgba(11, 19, 43, 0.22);
+  }
+  .topbar-inner {
+    max-width: 1580px; margin: 0 auto;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .brand-title { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .brand-emblem {
+    flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px;
+    background: linear-gradient(135deg, #fbbf24, #b45309);
+    color: #0b132b; font-weight: 700; font-size: 1.15rem; display: grid; place-items: center;
+  }
+  .brand-title h1 { font-size: 1.08rem; font-weight: 700; color: #fde68a; line-height: 1.3; }
+  .brand-title p { font-size: 0.78rem; color: #cbd5e1; line-height: 1.4; }
+  .legend-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .legend-chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+    border-radius: 999px; font-size: 0.75rem; font-weight: 600;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+  }
+  .top-actions { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+  .tool-btn {
+    border: 1px solid rgba(255,255,255,0.24); background: rgba(255,255,255,0.1);
+    color: #fff; padding: 6px 11px; border-radius: 8px; font-family: inherit;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: 0.18s;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.22); }
+  .tool-btn.gold { background: linear-gradient(135deg, #fbbf24, #d97706); color: #0b132b; border: none; font-weight: 700; }
+
+  .workspace {
+    display: grid; grid-template-columns: minmax(0, 1.32fr) minmax(370px, 0.98fr);
+    gap: 20px; max-width: 1580px; margin: 20px auto; padding: 0 18px 50px; align-items: start;
+  }
+  .book-sheet {
+    background: var(--bg-paper); border: 1px solid #dfd8c8; border-radius: 16px;
+    padding: 36px 44px;
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08), inset 0 0 0 6px #fff, inset 0 0 0 7px #efe9da;
+    font-family: 'Noto Serif Bengali', 'Hind Siliguri', serif;
+  }
+  .cover-banner { text-align: center; padding-bottom: 20px; margin-bottom: 22px; border-bottom: 2px solid #e6dec8; }
+  .edition-pill {
+    display: inline-block; font-family: 'Hind Siliguri', sans-serif; font-size: 0.76rem; font-weight: 700;
+    color: #92400e; background: #fef3c7; border: 1px solid #fcd34d; padding: 3px 14px; border-radius: 999px; margin-bottom: 8px;
+  }
+  .cover-banner h2 { font-size: 2.25rem; font-weight: 700; color: var(--navy-deep); }
+  .cover-author { font-size: 1.08rem; color: #64748b; font-weight: 600; margin-top: 2px; }
+  .owner-credit { margin-top: 8px; font-family: 'Hind Siliguri', sans-serif; font-size: 0.85rem; color: #475569; }
+
+  .stats-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 24px; font-family: 'Hind Siliguri', sans-serif;
+  }
+  .stat-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 8px; text-align: center;
+  }
+  .stat-card strong { display: block; font-size: 1.15rem; color: var(--navy-deep); }
+  .stat-card span { font-size: 0.74rem; color: var(--text-soft); font-weight: 600; }
+  .stat-card.s-red strong { color: var(--c-mcq); }
+  .stat-card.s-green strong { color: var(--c-sq); }
+  .stat-card.s-amber strong { color: var(--c-cq); }
+
+  .sec-title {
+    font-family: 'Hind Siliguri', sans-serif; font-size: 1.04rem; font-weight: 700; color: var(--navy-deep);
+    padding: 8px 14px; background: linear-gradient(90deg, #fef3c7 0%, rgba(254,243,199,0.2) 100%);
+    border-left: 4px solid var(--gold-bright); border-radius: 6px; margin: 24px 0 14px;
+  }
+  .author-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px;
+    font-size: calc(0.98rem * var(--font-scale)); margin-bottom: 18px;
+  }
+  .story-p {
+    font-size: calc(1.06rem * var(--font-scale)); margin-bottom: 16px; text-align: justify; color: #1e293b;
+  }
+  .story-p.dropcap::first-letter {
+    font-size: 2.5rem; font-weight: 700; float: left; line-height: 0.85; padding: 4px 10px 0 0; color: var(--gold-rich);
+  }
+
+  .q-phrase {
+    cursor: pointer; padding: 1px 4px; border-radius: 4px;
+    transition: box-shadow 0.18s ease, filter 0.18s ease;
+    box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  }
+  .q-phrase:hover { filter: brightness(0.96); box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12); }
+  .has-mcq { background-color: var(--bg-mcq); border-bottom: 2.5px solid var(--c-mcq); }
+  .has-sq  { background-color: var(--bg-sq);  border-bottom: 2.5px solid var(--c-sq); }
+  .has-cq  { background-color: var(--bg-cq);  border-bottom: 2.5px solid var(--c-cq); }
+  .has-mcq.has-sq {
+    background: linear-gradient(90deg, var(--bg-mcq) 50%, var(--bg-sq) 50%);
+    border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, var(--c-mcq) 50%, var(--c-sq) 50%) 1;
+  }
+  .has-mcq.has-cq {
+    background: linear-gradient(90deg, var(--bg-mcq) 50%, var(--bg-cq) 50%);
+    border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, var(--c-mcq) 50%, var(--c-cq) 50%) 1;
+  }
+  .has-sq.has-cq {
+    background: linear-gradient(90deg, var(--bg-sq) 50%, var(--bg-cq) 50%);
+    border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, var(--c-sq) 50%, var(--c-cq) 50%) 1;
+  }
+  .has-mcq.has-sq.has-cq {
+    background: linear-gradient(90deg, var(--bg-mcq) 34%, var(--bg-sq) 34%, var(--bg-sq) 67%, var(--bg-cq) 67%);
+    border-bottom: 3px solid transparent; border-image: linear-gradient(90deg, var(--c-mcq) 34%, var(--c-sq) 34%, var(--c-sq) 67%, var(--c-cq) 67%) 1;
+  }
+  .q-phrase.is-selected {
+    outline: 2.5px solid #0b132b; outline-offset: 1px; box-shadow: 0 0 0 5px rgba(11, 19, 43, 0.14);
+  }
+  .phrase-tag {
+    display: inline-flex; flex-wrap: wrap; align-items: center; gap: 3px;
+    margin-left: 4px; vertical-align: middle; font-family: 'Hind Siliguri', sans-serif; user-select: none;
+  }
+  .ptag { font-size: 0.67rem; font-weight: 700; padding: 0 6px; border-radius: 999px; line-height: 1.45; color: #fff; }
+  .ptag-m { background: var(--c-mcq); }
+  .ptag-s { background: var(--c-sq); }
+  .ptag-c { background: var(--c-cq); color: #0b132b; }
+
+  .facts-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px;
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;
+    padding: 16px 22px; font-family: 'Hind Siliguri', sans-serif; font-size: 0.89rem;
+  }
+  .facts-grid li { margin-left: 16px; color: #334155; }
+
+  .right-box {
+    position: sticky; top: 14px; background: var(--bg-panel); border: 1px solid #cbd5e1;
+    border-radius: 16px; box-shadow: 0 18px 45px rgba(11, 19, 43, 0.14);
+    height: calc(100vh - 28px); overflow-y: auto; display: flex; flex-direction: column;
+  }
+  .right-box-head {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 14px 16px; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;
+  }
+  .rb-top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .rb-top-row h3 { font-size: 0.98rem; color: var(--navy-deep); font-weight: 700; }
+  .rb-actions { display: flex; gap: 6px; align-items: center; }
+  .reset-pill {
+    border: none; background: #e2e8f0; color: #0f172a; padding: 5px 10px;
+    border-radius: 6px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .reset-pill:hover { background: #cbd5e1; }
+  .mobile-close-btn {
+    display: none; border: none; background: #dc2626; color: #fff; padding: 5px 10px;
+    border-radius: 6px; font-size: 0.76rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+
+  .board-analytics-box {
+    display: none; background: #fff; border: 1.5px solid #cbd5e1; border-left: 4px solid var(--navy-deep);
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  }
+  .ba-quote {
+    font-size: 0.81rem; color: #334155; font-style: italic;
+    padding-bottom: 6px; margin-bottom: 8px; border-bottom: 1px dashed #e2e8f0;
+  }
+  .ba-title { font-size: 0.78rem; font-weight: 700; color: var(--navy-deep); margin-bottom: 6px; }
+  .ba-board-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ba-board-item {
+    font-size: 0.74rem; background: #f8fafc; border: 1px solid #cbd5e1;
+    border-radius: 6px; padding: 3px 8px; color: #1e293b;
+  }
+
+  .full-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 9px; }
+  .ftab {
+    border: 1px solid #cbd5e1; background: #fff; color: #334155; padding: 4px 10px;
+    border-radius: 999px; font-size: 0.75rem; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .ftab.active { background: var(--navy-deep); color: #fff; border-color: var(--navy-deep); }
+  .ftab[data-type="mcq"].active { background: var(--c-mcq); border-color: var(--c-mcq); color: #fff; }
+  .ftab[data-type="sq"].active  { background: var(--c-sq); border-color: var(--c-sq); color: #fff; }
+  .ftab[data-type="cq"].active  { background: var(--c-cq); border-color: var(--c-cq); color: #0b132b; }
+
+  .search-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .search-row select, .search-row input {
+    flex: 1 1 140px; padding: 6px 10px; border: 1px solid #cbd5e1;
+    border-radius: 8px; font-family: inherit; font-size: 0.8rem; background: #fff;
+  }
+  .right-box-body { padding: 14px 16px; background: #fcfcfd; flex: 1; }
+
+  .q-card {
+    background: #fff; border: 1px solid #e2e8f0; border-left-width: 4.5px;
+    border-radius: 11px; padding: 13px 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  }
+  .q-card.t-mcq { border-left-color: var(--c-mcq); }
+  .q-card.t-sq  { border-left-color: var(--c-sq); }
+  .q-card.t-cq  { border-left-color: var(--c-cq); }
+  .q-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 7px; }
+  .q-badge { font-size: 0.72rem; font-weight: 700; padding: 2px 9px; border-radius: 6px; color: #fff; }
+  .b-mcq { background: var(--c-mcq); }
+  .b-sq  { background: var(--c-sq); }
+  .b-cq  { background: var(--c-cq); color: #0b132b; }
+  .b-board {
+    font-size: 0.72rem; font-weight: 600; color: #334155; background: #f1f5f9;
+    border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 6px;
+  }
+  .uddipak {
+    background: #f8fafc; border: 1px dashed #94a3b8; border-radius: 8px;
+    padding: 9px 11px; font-size: 0.85rem; color: #334155; margin-bottom: 8px;
+  }
+  .q-prompt { font-weight: 700; font-size: 0.93rem; color: var(--navy-deep); margin-bottom: 8px; }
+  .opts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .opt-item {
+    text-align: left; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 7px;
+    background: #f8fafc; font-family: inherit; font-size: 0.83rem; cursor: pointer; transition: 0.15s;
+  }
+  .opt-item:hover { background: #e2e8f0; }
+  .opt-item.is-right { background: #dcfce7; border-color: #16a34a; color: #14532d; font-weight: 700; }
+  .opt-item.is-wrong { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+  .ans-drawer {
+    margin-top: 8px; padding: 9px 11px; background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 8px; font-size: 0.85rem; color: #14532d; white-space: pre-line;
+  }
+  .cq-sub { margin-top: 9px; padding-top: 8px; border-top: 1px dashed #cbd5e1; }
+  .cq-sub-q { font-weight: 700; font-size: 0.88rem; color: #92400e; margin-bottom: 4px; }
+  .cq-sub-a { font-size: 0.84rem; color: #334155; white-space: pre-line; }
+  .card-foot-links { display: flex; gap: 12px; margin-top: 7px; }
+  .link-btn {
+    background: none; border: none; color: #2563eb; font-size: 0.76rem;
+    font-weight: 700; cursor: pointer; text-decoration: underline; font-family: inherit;
+  }
+
+  .drawer-backdrop { display: none; position: fixed; inset: 0; background: rgba(11, 19, 43, 0.55); z-index: 90; }
+  .drawer-backdrop.open { display: block; }
+  .mobile-float-btn {
+    display: none; position: fixed; right: 14px; bottom: 16px; z-index: 55;
+    background: linear-gradient(135deg, #0b132b, #1c2541); color: #fde68a; border: 2px solid #f59e0b;
+    padding: 9px 15px; border-radius: 999px; font-family: inherit; font-weight: 700; font-size: 0.82rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3); cursor: pointer;
+  }
+
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(11, 19, 43, 0.7);
+    z-index: 120; display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-bg.open { display: flex; }
+  .modal-box {
+    background: #fff; border-radius: 16px; max-width: 490px; width: 100%;
+    padding: 22px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); max-height: 92vh; overflow-y: auto;
+  }
+  .modal-box h3 { margin-bottom: 14px; color: var(--navy-deep); }
+  .f-grp { margin-bottom: 12px; }
+  .f-grp label { display: block; font-size: 0.83rem; font-weight: 700; margin-bottom: 4px; color: #334155; }
+  .f-grp input { width: 100%; padding: 8px 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; }
+  .modal-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .print-only-bank { display: none; }
+
+  @media print {
+    body { background: #fff; }
+    #homeView, .topbar, .right-box, .mobile-float-btn, .drawer-backdrop, .modal-bg, .card-foot-links { display: none !important; }
+    .workspace { display: block; max-width: 100%; margin: 0; padding: 0; }
+    .book-sheet { box-shadow: none; border: none; padding: 12px 18px; }
+    .print-only-bank { display: block !important; page-break-before: always; padding: 16px; }
+    .q-phrase, .ptag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  @media (max-width: 960px) {
+    .topbar { padding: 12px 14px; }
+    .brand-title h1 { font-size: 0.98rem; }
+    .brand-title p { font-size: 0.72rem; }
+    .workspace { grid-template-columns: 1fr; padding: 0 10px 76px; margin-top: 12px; }
+    .book-sheet { padding: 20px 15px; border-radius: 12px; }
+    .cover-banner h2 { font-size: 1.85rem; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .facts-grid { grid-template-columns: 1fr; padding: 14px 16px; }
+    .opts-grid { grid-template-columns: 1fr; }
+    .mobile-float-btn { display: inline-flex; align-items: center; gap: 6px; }
+    .mobile-close-btn { display: inline-block; }
+    .right-box {
+      position: fixed; top: 0; right: -105%; width: 92vw; max-width: 430px;
+      height: 100dvh; max-height: 100dvh; z-index: 95; border-radius: 16px 0 0 16px;
+      transition: right 0.28s cubic-bezier(0.22, 1, 0.36, 1); overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    .right-box.drawer-open { right: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== VIEW 1: LIBRARY HOME PORTAL ==================== -->
+<div id="homeView">
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="pill">SSC 2027 • বিজ্ঞান বিভাগ • ৮০০+ স্টুডেন্টস স্পেশাল ডিজিটাল লাইব্রেরি</div>
+      <h1>বোর্ড এনালাইসিস ইন্টারেক্টিভ ডিজিটাল বই</h1>
+      <p>প্রতিটি অধ্যায়ের মূল বইয়ের লাইন, সূত্র ও বিক্রিয়ার ওপর ক্লিক করেই দেখে নাও বোর্ড পরীক্ষায় আসা বহুনির্বাচনি, জ্ঞানমূলক, অনুধাবনমূলক ও সৃজনশীল প্রশ্ন!</p>
+      <div class="guide-strip">
+        <span class="g-chip"><span class="swatch sw-red"></span> লাল দাগ = বহুনির্বাচনি প্রশ্ন</span>
+        <span class="g-chip"><span class="swatch sw-green"></span> সবুজ দাগ = জ্ঞানমূলক ও অনুধাবনমূলক</span>
+        <span class="g-chip"><span class="swatch sw-amber"></span> হলুদ দাগ = সৃজনশীল (প্রয়োগ ও উচ্চতর)</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="portal-container">
+    <div class="portal-controls">
+      <div class="sub-tabs">
+        <button class="stab active" onclick="setSub('all', this)">সব বিষয়</button>
+        <button class="stab" onclick="setSub('bangla', this)">বাংলা</button>
+        <button class="stab" onclick="setSub('physics', this)">পদার্থবিজ্ঞান</button>
+        <button class="stab" onclick="setSub('chemistry', this)">রসায়ন</button>
+        <button class="stab" onclick="setSub('math', this)">গণিত ও উচ্চতর গণিত</button>
+        <button class="stab" onclick="setSub('biology', this)">জীববিজ্ঞান</button>
+      </div>
+      <input type="text" class="portal-search" id="portalSearch" placeholder="অধ্যায়ের নাম খুঁজুন..." oninput="renderPortalCards()">
+    </div>
+    <div class="portal-grid" id="portalGrid"></div>
+  </main>
+
+  <footer class="portal-footer">
+    <strong>SSC 2027 Science Digital Edition</strong> • মোবাইল ও পিসির জন্য অপ্টিমাইজড • সম্পূর্ণ প্রশ্নব্যাংক ও পাঠ্যবই সমন্বিত
+  </footer>
+</div>
+
+<!-- ==================== VIEW 2: PRATYUPAKAR CHAPTER VIEW ==================== -->
+<div id="chapterView" class="hidden">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-title">
+        <div class="brand-emblem">প্র</div>
+        <div>
+          <h1 id="uiTitle">প্রত্যুপকার — সম্পূর্ণ বোর্ড ও প্রশ্নব্যাংক ডিজিটাল বই</h1>
+          <p id="uiSub">এসএসসি বাংলা ১ম পত্র • ঈশ্বরচন্দ্র বিদ্যাসাগর • দাগানো অংশে ক্লিক করলে ডানপাশে প্রশ্ন ও বোর্ড বিশ্লেষণ খুলবে</p>
+        </div>
+      </div>
+
+      <div class="legend-bar">
+        <span class="legend-chip"><span class="swatch sw-red"></span> বহুনির্বাচনি (৬০টি)</span>
+        <span class="legend-chip"><span class="swatch sw-green"></span> জ্ঞানমূলক ও অনুধাবনমূলক (২৭টি)</span>
+        <span class="legend-chip"><span class="swatch sw-amber"></span> সৃজনশীল (৬ সেট)</span>
+      </div>
+
+      <div class="top-actions">
+        <button class="tool-btn gold" onclick="goHome()">← লাইব্রেরি হোম</button>
+        <button class="tool-btn" onclick="changeFont(-0.06)">অ-</button>
+        <button class="tool-btn" onclick="changeFont(0.06)">অ+</button>
+        <button class="tool-btn" onclick="toggleInlineTags()">ট্যাগ দেখাও/লুকাও</button>
+        <button class="tool-btn" onclick="toggleAllAnswers()">সব উত্তর দেখাও</button>
+        <button class="tool-btn gold" onclick="openModal()">কাস্টমাইজ ও PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <article class="book-sheet">
+      <div class="cover-banner">
+        <div class="edition-pill" id="uiBadge">SSC Special Master Digital Edition • ২০২৭</div>
+        <h2>প্রত্যুপকার</h2>
+        <div class="cover-author">ঈশ্বরচন্দ্র বিদ্যাসাগর</div>
+        <div class="owner-credit" id="uiOwner">সংকলন ও সম্পাদনা: <strong>প্রিমিয়াম একাডেমিক এডিশন</strong></div>
+      </div>
+
+      <div class="stats-strip">
+        <div class="stat-card s-red"><strong>৬০টি</strong><span>বহুনির্বাচনি প্রশ্ন</span></div>
+        <div class="stat-card s-green"><strong>১৫ + ১২টি</strong><span>জ্ঞানমূলক ও অনুধাবনমূলক</span></div>
+        <div class="stat-card s-amber"><strong>৬ সেট</strong><span>সৃজনশীল (গ ও ঘ)</span></div>
+        <div class="stat-card"><strong>১৫টি তথ্য</strong><span>এক নজরে সারসংক্ষেপ</span></div>
+      </div>
+
+      <div class="sec-title">লেখক-পরিচিতি</div>
+      <section class="author-card">
+        [লেখক-পরিচিতি: ঈশ্বরচন্দ্র বিদ্যাসাগর ভারতের পশ্চিমবঙ্গের মেদিনীপুর জেলার বীরসিংহ গ্রামে ২৬শে সেপ্টেম্বর ১৮২০ সালে জন্মগ্রহণ করেন। তাঁর মূল নাম ঈশ্বরচন্দ্র বন্দ্যোপাধ্যায়। 'বিদ্যাসাগর' তাঁর উপাধি। তিনি ছিলেন কলকাতা সংস্কৃত কলেজের ছাত্র।
+        <span class="q-phrase" data-lid="L_bio_2">তিনি প্রথমে সংস্কৃত ও পরে ইংরেজি ভাষায় পাণ্ডিত্য অর্জন করেন। দানশীলতার জন্য তিনি 'দয়ার সাগর' নামেও পরিচিত।</span>
+        একাধারে পণ্ডিত, শিক্ষাবিদ, সমাজ-সংস্কারক ও খ্যাতনামা লেখক হিসেবে প্রতিষ্ঠা লাভ করেছিলেন তিনি। সুশৃঙ্খল পদবিন্যাস, যথাযথভাবে যতিচিহ্ন প্রয়োগ এবং
+        <span class="q-phrase" data-lid="L_bio_3">সাহিত্যিক গদ্য রচনার জন্য তাঁকে বাংলা গদ্যের জনক বলা হয়ে থাকে।</span>
+        বাংলা বর্ণমালাকে নতুন বিন্যাসে সাজিয়ে
+        <span class="q-phrase" data-lid="L_bio_4">১৮৫৫ সালে বিদ্যাসাগর প্রকাশ করেন শিশুপাঠ্য বই বর্ণপরিচয়। ভাষা শিক্ষাদানের ক্ষেত্রে এ বই আজও পথপ্রদর্শক বিবেচিত হয়।</span>
+        বেতাল পঞ্চবিংশতি, ব্যাকরণ কৌমুদী, শকুন্তলা, বিধবা বিবাহ প্রচলিত হওয়া উচিত কি না এতদ্বিষয়ক প্রস্তাব, সীতার বনবাস, ভ্রান্তিবিলাস প্রভৃতি তাঁর প্রধান গ্রন্থ। ঈশ্বরচন্দ্র বিদ্যাসাগর
+        <span class="q-phrase" data-lid="L_bio_5">১৮৯১ সালের ২৯শে জুলাই মৃত্যুবরণ করেন।</span>]
+      </section>
+
+      <div class="sec-title">মূল পাঠ্যাংশ</div>
+
+      <p class="story-p dropcap">
+        <span class="q-phrase" data-lid="L1">আলী ইবনে আব্বাস নামে এক ব্যক্তি মামুন নামক খলিফার প্রিয়পাত্র ছিলেন।</span>
+        তিনি বলিয়া গিয়াছেন,
+        <span class="q-phrase" data-lid="L2">আমি একদিন অপরাহ্ণে খলিফার নিকটে বসিয়া আছি</span>
+        এমন সময়ে, হস্তপদবদ্ধ এক ব্যক্তি তাঁহার সম্মুখে নীত হইলেন। খলিফা আমার প্রতি এই আজ্ঞা করিলেন,
+        <span class="q-phrase" data-lid="L3">তুমি এ ব্যক্তিকে আপন আলয়ে লইয়া গিয়া রুদ্ধ করিয়া রাখিবে</span>
+        এবং কল্য আমার নিকট উপস্থিত করিবে। তদীয় ভাব দর্শনে স্পষ্ট প্রতীত হইল, তিনি ঐ ব্যক্তির উপর অত্যন্ত ক্রুদ্ধ হইয়াছেন। আমি তাঁহাকে আপন আলয়ে আনিয়া অতি সাবধানে রুদ্ধ করিয়া রাখিলাম, কারণ
+        <span class="q-phrase" data-lid="L4">যদি তিনি পলাইয়া যান, আমাকে খলিফার কোপে পতিত হইতে হইবে।</span>
+      </p>
+
+      <p class="story-p">
+        কিয়ৎক্ষণ পরে, আমি তাঁহাকে জিজ্ঞাসিলাম, আপনার নিবাস কোথায়? তিনি বলিলেন,
+        <span class="q-phrase" data-lid="L5">ডেমাস্কাস আমার জন্মস্থান; ঐ নগরের যে অংশে বৃহৎ মসজিদ আছে, তথায় আমার বাস।</span>
+        আমি বলিলাম, ডেমাস্কাস নগরের, বিশেষত যে অংশে আপনার বাস তাহার উপর, জগদীশ্বরের শুভদৃষ্টি থাকুক। ঐ অংশের অধিবাসী এক ব্যক্তি একসময় আমার প্রাণদান দিয়াছিলেন।
+      </p>
+
+      <p class="story-p">
+        আমার এই কথা শুনিয়া, তিনি সবিশেষ জানিবার নিমিত্ত, ইচ্ছা প্রকাশ করিলে, আমি বলিতে আরম্ভ করিলাম : বহু বৎসর পূর্বে ডেমাস্কাসের শাসনকর্তা পদচ্যুত হইলে, যিনি তদীয় পদে অধিষ্ঠিত হন, আমি তাঁহার সমভিব্যাহারে তথায় গিয়াছিলাম।
+        <span class="q-phrase" data-lid="L7">পদচ্যুত শাসনকর্তা বহুসংখ্যক সৈন্য লইয়া আমাদিগকে আক্রমণ করিলেন।</span>
+        আমি প্রাণভয়ে পলাইয়া, এক সম্ভ্রান্ত লোকের বাড়িতে প্রবিষ্ট হইলাম এবং গৃহস্বামীর নিকট গিয়া, অতি কাতর বচনে প্রার্থনা করিলাম, আপনি কৃপা করিয়া আমার প্রাণ রক্ষা করুন।
+        <span class="q-phrase" data-lid="L8">আমার প্রার্থনাবাক্য শুনিয়া গৃহস্বামী আমায় অভয় প্রদান করিলেন।</span>
+        আমি তদীয় আবাসে,
+        <span class="q-phrase" data-lid="L9">এক মাসকাল নির্ভয়ে ও নিরাপদে অবস্থিতি করিলাম।</span>
+      </p>
+
+      <p class="story-p">
+        <span class="q-phrase" data-lid="L10">একদিন আশ্রয়দাতা আমায় বলিলেন,</span>
+        এ সময়ে অনেক লোক বাগদাদ যাইতেছেন। স্বদেশে প্রতিগমনের পক্ষে আপনি ইহা অপেক্ষা অধিক সুবিধার সময় পাইবেন না। আমি সম্মত হইলাম।
+        <span class="q-phrase" data-lid="L11">আমার সঙ্গে কিছুমাত্র অর্থ ছিল না, লজ্জাবশত আমি তাঁহার নিকট সে কথা ব্যক্ত করিতে পারিলাম না। তিনি, আমার আকার প্রকার দর্শনে, তাহা বুঝিতে পারিলেন,</span>
+        কিন্তু তৎকালে কিছু না বলিয়া, মৌনাবলম্বন করিয়া রহিলেন।
+      </p>
+
+      <p class="story-p">
+        তিনি আমার জন্য যে সমস্ত উদ্যোগ করিয়া রাখিয়াছিলেন, প্রস্থান দিবসে তাহা দেখিয়া আমি বিস্ময়াপন্ন হইলাম।
+        <span class="q-phrase" data-lid="L12">একটি উৎকৃষ্ট অশ্ব সুসজ্জিত হইয়া আছে, আর একটি অশ্বের পৃষ্ঠে খাদ্যসামগ্রী স্থাপিত হইয়াছে, আর পথে আমার পরিচর্যা করিবার নিমিত্ত, একটি ভৃত্য প্রস্থানার্থে প্রস্তুত হইয়া রহিয়াছে।</span>
+        প্রস্থান সময় উপস্থিত হইলে, সেই
+        <span class="q-phrase" data-lid="L13">দয়াময়, সদাশয়, আশ্রয়দাতা আমার হস্তে একটি স্বর্ণমুদ্রার থলি দিলেন</span>
+        এবং আমাকে যাত্রীদের নিকটে লইয়া গেলেন। তন্মধ্যে যাহাদের সহিত তাঁহার আত্মীয়তা ছিল, তাঁহাদের সঙ্গে আলাপ করাইয়া দিলেন। আমি আপনকার বসতি স্থানে এই সমস্ত উপকার প্রাপ্ত হইয়াছিলাম।
+        <span class="q-phrase" data-lid="L14">এ জন্য পৃথিবীতে যত স্থান আছে ঐ স্থান আমার সর্বাপেক্ষা প্রিয়।</span>
+      </p>
+
+      <p class="story-p">
+        এই নির্দেশ করিয়া, দুঃখ প্রকাশপূর্বক আমি বলিলাম, আক্ষেপের বিষয় এই, আমি এ পর্যন্ত সেই দয়াময় আশ্রয়দাতার কখনো কোনো উদ্দেশ পাইলাম না। যদি তাঁহার নিকট কোনো অংশে কৃতজ্ঞতা প্রদর্শনের অবসর পাই, তাহা হইলে মৃত্যকালে আমার কোনো ক্ষোভ থাকে না। এই কথা শুনিবামাত্র, তিনি অতিশয় আহ্লাদিত হইয়া বলিলেন,
+        <span class="q-phrase" data-lid="L15">আপনার মনস্কাম পূর্ণ হইয়াছে।</span>
+        আপনি যে ব্যক্তির উল্লেখ করিলেন, সে এই। এই হতভাগ্যই আপনাকে, এক মাসকাল আপন আলয়ে রাখিয়াছিল।
+      </p>
+
+      <p class="story-p">
+        তাঁহার এই কথা শুনিয়া, আমি চমকিয়া উঠিলাম,
+        <span class="q-phrase" data-lid="L16">সবিশেষ অভিনিবেশ সহকারে, কিয়ৎক্ষণ নিরীক্ষণ করিয়া, তাঁহাকে চিনিতে পারিলাম;</span>
+        আহ্লাদে পুলকিত হইয়া অশ্রুপূর্ণ নয়নে আলিঙ্গন করিলাম; তাঁহার হস্ত ও পদ হইতে লৌহশৃঙ্খল খুলিয়া দিলাম এবং কী দুর্ঘটনাক্রমে তিনি খলিফার কোপে পতিত হইয়াছেন, তাহা জানিবার নিমিত্ত নিতান্ত ব্যগ্র হইলাম। তখন তিনি বলিলেন, কতিপয় নীচ প্রকৃতির লোক ঈর্ষাবশত শত্রুতা করিয়া খলিফার নিকট আমার ওপর উৎকট দোষারোপ করিয়াছে; তজ্জন্য তদীয় আদেশক্রমে হঠাৎ অবরুদ্ধ ও এখানে আনীত হইয়াছি; আসিবার সময় স্ত্রী, পুত্র, কন্যাদিগের সহিত দেখা করিতে দেয় নাই; বোধ করি আমার প্রাণদণ্ড হইবে। অতএব, আপনার নিকট বিনীত বাক্যে প্রার্থনা এই,
+        <span class="q-phrase" data-lid="L17">আপনি অনুগ্রহ করিয়া আমার পরিবারবর্গের নিকট এই সংবাদ পাঠাইয়া দিবেন।</span>
+        তাহা হইলে আমি যথেষ্ট উপকৃত হইব।
+      </p>
+
+      <p class="story-p">
+        তাঁহার এই প্রার্থনা শুনিয়া আমি বলিলাম, না, না, আপনি এক মুহূর্তের জন্যও প্রাণনাশের আশঙ্কা করিবেন না;
+        <span class="q-phrase" data-lid="L18">আপনি এই মুহূর্ত হইতে স্বাধীন; এই বলিয়া পাথেয়স্বরূপ সহস্র স্বর্ণমুদ্রার একটি থলি তাঁহার হস্তে দিয়া বলিলাম,</span>
+        আপনি অবিলম্বে প্রস্থান করুন এবং স্নেহাস্পদ পরিবারবর্গের সহিত মিলিত হইয়া সংসারযাত্রা সম্পন্ন করুন। আপনাকে ছাড়িয়া দিলাম, এ জন্য আমার ওপর খলিফার মর্মান্তিক ক্রোধ ও দ্বেষ জন্মিবে, তাহাতে সন্দেহ নাই।
+        <span class="q-phrase" data-lid="L19">কিন্তু যদি আপনার প্রাণ রক্ষা করিতে পারি, তাহা হইলে সে জন্য আমি অণুমাত্র দুঃখিত হইব না।</span>
+      </p>
+
+      <p class="story-p">
+        আমার প্রস্তাব শুনিয়া তিনি বলিলেন, আপনি যাহা বলিতেছেন, আমি কখনোই তাহাতে সম্মত হইতে পারিব না।
+        <span class="q-phrase" data-lid="L20">আমি এত নীচাশয় ও স্বার্থপর নহি যে, কিছুকাল পূর্বে, যে প্রাণের রক্ষা করিয়াছি, আপন প্রাণরক্ষার্থে এক্ষণে সেই প্রাণের বিনাশের কারণ হইব।</span>
+        তাহা কখনোই হইবে না।
+        <span class="q-phrase" data-lid="L21">যাহাতে খলিফা আমার ওপর অক্রোধ হন, আপনি দয়া করিয়া তাহার যথোপযুক্ত চেষ্টা দেখুন;</span>
+        তাহা হইলেই আপনার প্রকৃত কৃতজ্ঞতা প্রদর্শন করা হইবে। যদি আপনার চেষ্টা সফল না হয়, তাহা হইলেও আমার কোনো ক্ষোভ থাকিবে না।
+      </p>
+
+      <p class="story-p">
+        <span class="q-phrase" data-lid="L22">পরদিন প্রাতঃকালে আমি খলিফার নিকট উপস্থিত হইলাম।</span>
+        তিনি জিজ্ঞাসা করিলেন, সে লোকটি কোথায়, তাহাকে আনিয়াছ? এই বলিয়া, তিনি ঘাতককে ডাকাইয়া, প্রস্তুত হইতে আদেশ দিলেন। তখন আমি তাঁহার চরণে পতিত হইয়া বিনীত ও কাতর বচনে বলিলাম, ধর্মাবতার, ঐ ব্যক্তির বিষয়ে আমার কিছু বক্তব্য আছে। অনুমতি হইলে সবিশেষ সমস্ত আপনকার গোচর করি। এই কথা শুনিবামাত্র তাঁহার কোপানল প্রজ্বলিত হইয়া উঠিল। তিনি রোষরক্ত নয়নে বলিলেন, আমি শপথ করিয়া বলিতেছি,
+        <span class="q-phrase" data-lid="L23">যদি তুমি তাহাকে ছাড়িয়া দিয়া থাক, এই দণ্ডে তোমার প্রাণদণ্ড হইবে।</span>
+        তখন আমি বলিলাম, আপনি ইচ্ছা করিলে, এই মুহূর্তে আমার ও তাহার প্রাণদণ্ড করিতে পারেন তাহার সন্দেহ কি। কিন্তু, আমি যে নিবেদন করিতে ইচ্ছা করিতেছি,
+        <span class="q-phrase" data-lid="L24">কৃপা করিয়া তাহা শুনিলে, আমি চরিতার্থ হই।</span>
+      </p>
+
+      <p class="story-p">
+        এই কথা শুনিয়া খলিফা উদ্ধত বচনে বলিলেন, কী বলিতে চাও, বল। তখন সে ব্যক্তি ডেমাস্কাস নগরে কীরূপে আশ্রয়দান ও প্রাণরক্ষা করিয়াছিলেন এবং এক্ষণে তাহাকে ছাড়িয়া দিতে চাহিলে, আমি অবধারিত বিপদে পড়িব, এ জন্য তাহাতে কোনোমতে সম্মত হইলেন না; এই দুই বিষয়ে সবিশেষ নির্দেশ করিয়া বলিলাম, ধর্মাবতার, যে ব্যক্তির এরূপ প্রকৃতি ও এরূপ মতি, অর্থাৎ যে ব্যক্তি এমন দয়াশীল, পরোপকারী, ন্যায়পরায়ণ ও সদ্‌বিবেচক তিনি কখনোই দুরাচার নহেন। নীচপ্রকৃতি পরহিংসুক দুরাত্মারা, ঈর্ষাবশত অমূলক দোষারোপ করিয়া তাহার সর্বনাশ করিতে উদ্যত হইয়াছে; নতুবা যাহাতে প্রাণদণ্ড হইতে পারে, তিনি এরূপ কোনো দোষে দূষিত হইতে পারেন,
+        <span class="q-phrase" data-lid="L25">আমার এরূপ বোধ ও বিশ্বাস হয় না।</span>
+        এ ক্ষেত্রে আপনার যেরূপ অভিরুচি হয় করুন।
+      </p>
+
+      <p class="story-p">
+        <span class="q-phrase" data-lid="L26">খলিফা মহামতি ও অতি উন্নতচিত্ত পুরুষ ছিলেন। তিনি এই সকল কথা কর্ণগোচর করিয়া কিয়ৎক্ষণ মৌনাবলম্বন করিয়া রহিলেন;</span>
+        অনন্তর প্রসন্ন বদনে বলিলেন, সে ব্যক্তি যে এরূপ দয়াশীল ও ন্যায়পরায়ণ, ইহা অবগত হইয়া আমি অতিশয় আহ্লাদিত হইলাম।
+        <span class="q-phrase" data-lid="L27">তিনি প্রাণদণ্ড হইতে অব্যাহতি পাইলেন। বলিতে গেলে, তোমা হইতেই তাহার প্রাণরক্ষা হইল।</span>
+        এক্ষণে তাহাকে অবিলম্বে এই সংবাদ দাও, ও আমার নিকটে লইয়া আইস।
+      </p>
+
+      <p class="story-p">
+        এই কথা শুনিয়া আহ্লাদের সাগরে মগ্ন হইয়া আমি সত্বর গৃহে প্রত্যাগমনপূর্বক তাঁহাকে খলিফার সম্মুখে উপস্থিত করিলাম। খলিফা অবলোকনমাত্র, প্রীতি-প্রফুল্ললোচনে, সাদর বচনে সম্ভাষণ করিয়া বলিলেন, তুমি যে এরূপ প্রকৃতির লোক, তাহা আমি পূর্বে অবগত ছিলাম না। দুষ্টমতি দুরাত্মাদিগের বাক্য বিশ্বাস করিয়া অকারণে তোমার প্রাণদণ্ড করিতে উদ্যত হইয়াছিলাম। এক্ষণে, ইহার নিকটে তোমার প্রকৃত পরিচয় পাইয়া, সাতিশয় প্রীতিপ্রাপ্ত হইয়াছি। আমি অনুমতি দিতেছি, তুমি আপন আলয়ে প্রস্থান কর। এই বলিয়া, খলিফা, তাহাকে
+        <span class="q-phrase" data-lid="L28">মহামূল্য পরিচ্ছদ, সুসজ্জিত দশ অশ্ব, দশ খচ্চর, দশ উষ্ট্র উপহার দিলেন</span>
+        এবং ডেমাস্কাসের রাজপ্রতিনিধির নামে এক অনুরোধপত্র ও পাথেয়স্বরূপ বহুসংখ্যক অর্থ দিয়া তাহাকে বিদায় করিলেন।
+      </p>
+
+      <div class="sec-title">শব্দার্থ ও টীকা এবং পাঠ-পরিচিতি (শতভাগ হুবহু পাঠ্যবই)</div>
+      <section class="author-card" style="line-height:1.9;">
+        <strong>শব্দার্থ ও টীকা :</strong>
+        <span class="q-phrase" data-lid="L_note_1a"><strong>প্রত্যুপকার-</strong> উপকারীর প্রতি উপকার।</span>
+        <strong>অভিরুচি-</strong> ইচ্ছা।
+        <span class="q-phrase" data-lid="L_note_1b"><strong>সমভিব্যাহারে-</strong> সঙ্গে নিয়ে।</span>
+        <strong>নিষ্কৃতি-</strong> মুক্তি।
+        <span class="q-phrase" data-lid="L_note_1c"><strong>কোপানল-</strong> কোপ ও অনল মিলে কোপানল; ক্রোধ বা রাগের আগুন। এখানে যাওয়া অর্থে ব্যবহার করা হয়েছে।</span>
+        <span class="q-phrase" data-lid="L_note_1d"><strong>প্রতীতি-</strong> বিশ্বাস।</span>
+        <strong>পরিচ্ছদ-</strong> পোশাক।
+        <strong>প্রীতিপ্রফুল্ললোচনে-</strong> শব্দটিতে মূলত তিনটি শব্দ যুক্ত করা হয়েছে; প্রীতি, প্রফুল্ল ও লোচন—বন্ধুত্বের অনুভূতিতে আনন্দিত চোখে। লোচন অর্থ চোখ।
+        <strong>মৌনাবলম্বন-</strong> মৌন ও অবলম্বন মিলে মৌনাবলম্বন; অর্থাৎ নিরবতা পালন।
+        <strong>অব্যাহতি-</strong> মুক্তি, ছাড়া পাওয়া।
+        <strong>অবধারিত-</strong> নিশ্চিত।
+        <strong>প্রত্যাগমন-</strong> ফিরে আসা। শব্দটি গঠিত দুটি শব্দ মিলে: প্রতি ও আগমন।
+        <strong>রোষারক্ত নয়নে-</strong> ক্রোধে লাল চোখে।
+        <strong>অবলোকনমাত্র-</strong> দেখামাত্র।
+        <strong>সম্ভাষণ-</strong> সম্বোধন।
+        <strong>উৎকট-</strong> অত্যন্ত প্রবল, তীব্র।
+        <strong>অবরুদ্ধ-</strong> বন্দি।
+        <strong>নিরীক্ষণ-</strong> মনোযোগ দিয়ে দেখা।
+        <strong>খলিফা-</strong> প্রতিনিধি। হযরত মুহম্মদ (স.)-এর পরে মুসলিম রাষ্ট্রের সর্বপ্রধান শাসনকর্তাকে 'খলিফা' বলা হতো। তিনি একাধারে রাজ্যের প্রধান শাসক ও ধর্মনেতা ছিলেন।<br><br>
+        <strong>ডেমাস্কাস-</strong> দামেস্ক। এশিয়ার একটি প্রাচীন শহর। হযরত ইব্রাহিমের (আ.) যুগের পূর্বে এখানে শহর গড়ে উঠেছিল বলে জানা যায়।
+        <span class="q-phrase" data-lid="L_note_2">বর্তমানে দামেস্ক সিরিয়ার রাজধানী।</span><br>
+        <strong>মামুন-</strong> আল মামুন নামেই সমধিক পরিচিত।
+        <span class="q-phrase" data-lid="L_note_3">তাঁর পূর্ণ নাম আবুল আব্বাস আবদুল্লাহ আল মামুন (৭৮৬-৮৩৩ খ্রিষ্টাব্দ)। তিনি ছিলেন সপ্তম আব্বাসীয় খলিফা এবং খলিফা হারুনর রশীদের দ্বিতীয় পুত্র।</span><br>
+        <span class="q-phrase" data-lid="L_note_4"><strong>বাগদাদ-</strong> বর্তমান ইরাকের রাজধানী। খলিফা হারুনর রশীদের সময় বাগদাদ মুসলিম সভ্যতার শ্রেষ্ঠ নগরীতে পরিণত হয়। টাইগ্রিস নদীর উভয় তীরে এবং ফুরাত বা ইউফ্রেটিস নদীর পঁচিশ মাইল উত্তরে অবস্থিত। আব্বাসীয় খলিফা মনসুর ৭৬৩ খ্রিষ্টাব্দে নগরটি প্রতিষ্ঠা করেন। খলিফা হারুনর রশীদের সময় বাগদাদ মুসলিম সভ্যতার অন্যতম শ্রেষ্ঠ নগরীতে পরিণত হয়। বর্তমানে ইরাকের রাজধানী।</span><br><br>
+        <strong>পাঠ-পরিচিতি :</strong>
+        <span class="q-phrase" data-lid="L_note_5a">'প্রত্যুপকার' রচনাটি আখ্যানমঞ্জরী দ্বিতীয় ভাগ থেকে সংকলন করা হয়েছে।</span>
+        ঈশ্বরচন্দ্র বিদ্যাসাগরের আখ্যানমঞ্জরী রচিত হয় ১৮৬৮ খ্রিষ্টাব্দে। বিশ্বের নানা দেশের ইতিহাস প্রসিদ্ধ ব্যক্তিগণের জীবনের গৌরবদীপ্ত ঘটনাই এ গ্রন্থের বিভিন্ন রচনার উপজীব্য। 'প্রত্যুপকার' আলী আব্বাস নামক এক ব্যক্তির প্রতি-উপকারের কাহিনি। খলিফা মামুনের সময়কালে দামেস্কের জনৈক শাসনকর্তা পদচ্যুত হন। নতুন শাসনকর্তা মামুনের একজন প্রিয়পাত্র ছিলেন আলী ইবনে আব্বাস। তিনি স্থানীয় একজন সম্ভ্রান্ত ব্যক্তির কাছে আশ্রয়লাভ করে জীবন রক্ষা করেন। পরবর্তীকালে আলী ইবনে আব্বাসের আশ্রয়দাতা ওই সম্ভ্রান্ত ব্যক্তিটি খলিফা মামুনের সৈন্যদল কর্তৃক বন্দি হন এবং খলিফার নির্দেশে আলী ইবনে আব্বাসের গৃহে তাকে অন্তরীণ করে রাখার ব্যবস্থা করা হয়। আলী ইবনে আব্বাস বন্দি ব্যক্তির সঠিক পরিচয় জানতে পেরে উপকারীর উপকারের জন্য নিজের জীবনের ঝুঁকি গ্রহণ করেন এবং খলিফার কাছে তার মুক্তির জন্য সুপারিশ করেন।
+        <span class="q-phrase" data-lid="L_note_5b">বস্তুত এ রচনায় দুজন মহৎ ব্যক্তির কাহিনি বর্ণিত হয়েছে, তাদের একজন নিঃস্বার্থ উপকারী, অন্যজন সকৃতজ্ঞ প্রত্যুপকারী। খলিফার মহত্ত্বও এ রচনায় প্রকাশিত হয়েছে।</span>
+      </section>
+
+      <div class="sec-title">গুরুত্বপূর্ণ তথ্যাবলি (প্রশ্নব্যাংক থেকে ১৫টি পয়েন্ট হুবহু)</div>
+      <ul class="facts-grid">
+        <li>ঈশ্বরচন্দ্র বিদ্যাসাগরের 'আখ্যানমঞ্জরী' রচিত হয়— ১৮৬৮ খ্রিষ্টাব্দে।</li>
+        <li>'আখ্যানমঞ্জরী' গ্রন্থে বিশ্বের নানা দেশের ইতিহাস প্রসিদ্ধ ব্যক্তিগণের জীবনের গৌরবদীপ্ত ঘটনার বর্ণনা করা হয়েছে।</li>
+        <li>বাংলা গদ্যের জনক- ঈশ্বরচন্দ্র বিদ্যাসাগর।</li>
+        <li>ঈশ্বরচন্দ্র বিদ্যাসাগরের মূল নাম— ঈশ্বরচন্দ্র বন্দ্যোপাধ্যায়।</li>
+        <li>মামুন নামক খলিফার প্রিয়পাত্র ছিলেন— আলী ইবনে আব্বাস।</li>
+        <li>আলী ইবনে আব্বাসের আশ্রয়দাতা সম্ভ্রান্ত ব্যক্তিটি ঘটনাক্রমে খলিফা মামুনের সৈন্যদল কর্তৃক বন্দি হন।</li>
+        <li>আলী ইবনে আব্বাস আশ্রয়দাতা ব্যক্তিটির পরিচয় জানতে পেরে তাকে মুক্তি দিতে চাইলেন।</li>
+        <li>বন্দি ব্যক্তিটি আলী ইবনে আব্বাসকে বিপদে ফেলে চলে যেতে চাননি।</li>
+        <li>খলিফা মামুন মহামতি ও অতি উন্নতচিত্তের পুরুষ ছিলেন।</li>
+        <li>বিদায় বেলায় খলিফা বন্দি ব্যক্তিকে উপহার দিলেন— মহামূল্য পরিচ্ছদ, সুসজ্জিত দশ অশ্ব, দশ খচ্চর, দশ উষ্ট্র।</li>
+        <li>হজরত মুহাম্মদ (স.) এর পরে মুসলিম রাষ্ট্রের সর্বপ্রধান শাসনকর্তাকে 'খলিফা' বলা হতো।</li>
+        <li>সিরিয়ার রাজধানী— দামেস্ক।</li>
+        <li>হজরত ইব্রাহিম (আ.) এর যুগের পূর্বে শহর গড়ে উঠেছিল- দামেস্কে।</li>
+        <li>খলিফা মামুনের পূর্ণ নাম— আবুল আব্বাস আবদুল্লাহ আল মামুন।</li>
+        <li>ইরাকের রাজধানী— বাগদাদ।</li>
+      </ul>
+
+      <section class="print-only-bank" id="printBank"></section>
+    </article>
+
+    <aside class="right-box" id="rightBox">
+      <div class="right-box-head">
+        <div class="rb-top-row">
+          <h3 id="panelTitle">সকল বোর্ড ও প্রতিষ্ঠান প্রশ্ন (৯৩টি)</h3>
+          <div class="rb-actions">
+            <button class="reset-pill" onclick="clearSelection()">সব প্রশ্ন দেখুন</button>
+            <button class="mobile-close-btn" onclick="toggleDrawer(false)">বন্ধ করুন ✕</button>
+          </div>
+        </div>
+
+        <div class="board-analytics-box" id="boardAnalyticsBox">
+          <div class="ba-quote" id="baQuote"></div>
+          <div class="ba-title">এই অংশ থেকে বোর্ড ও প্রতিষ্ঠান ভিত্তিক প্রশ্ন সংখ্যা:</div>
+          <div class="ba-board-list" id="baBoardList"></div>
+        </div>
+
+        <div class="full-tabs">
+          <button class="ftab active" data-type="all" onclick="setType('all', this)">সবগুলো</button>
+          <button class="ftab" data-type="mcq" onclick="setType('mcq', this)">বহুনির্বাচনি</button>
+          <button class="ftab" data-type="sq" onclick="setType('sq', this)">জ্ঞানমূলক ও অনুধাবনমূলক</button>
+          <button class="ftab" data-type="cq" onclick="setType('cq', this)">সৃজনশীল</button>
+        </div>
+
+        <div class="search-row">
+          <select id="boardSelect" onchange="renderQuestions()">
+            <option value="all">সকল বোর্ড ও শিক্ষাপ্রতিষ্ঠান</option>
+          </select>
+          <input type="text" id="qSearch" placeholder="প্রশ্ন বা উত্তর খুঁজুন..." oninput="renderQuestions()">
+        </div>
+      </div>
+
+      <div class="right-box-body" id="qContainer"></div>
+    </aside>
+  </main>
+
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+  <button class="mobile-float-btn" onclick="toggleDrawer(true)">প্রশ্ন ও বোর্ড বক্স (৯৩) ☰</button>
+</div>
+
+<!-- CUSTOMIZE & PDF MODAL -->
+<div class="modal-bg" id="customModal">
+  <div class="modal-box">
+    <h3>ডিজিটাল বই ও PDF কাস্টমাইজ করুন</h3>
+    <div class="f-grp">
+      <label>বই / শিটের শিরোনাম (Book Title)</label>
+      <input type="text" id="inTitle" value="প্রত্যুপকার — সম্পূর্ণ বোর্ড ও প্রশ্নব্যাংক ডিজিটাল বই">
+    </div>
+    <div class="f-grp">
+      <label>সাবটাইটেল (Subtitle)</label>
+      <input type="text" id="inSub" value="এসএসসি বাংলা ১ম পত্র • ঈশ্বরচন্দ্র বিদ্যাসাগর • ২০২৭ মাস্টার এডিশন">
+    </div>
+    <div class="f-grp">
+      <label>মালিক / শিক্ষক / প্রতিষ্ঠানের নাম (Owner Name)</label>
+      <input type="text" id="inOwner" placeholder="যেমন: তোমার নাম বা কোচিংয়ের নাম">
+    </div>
+    <div class="f-grp">
+      <label>এডিশন ব্যাজ (Edition Badge)</label>
+      <input type="text" id="inBadge" value="SSC Special Master Digital Edition • ২০২৭">
+    </div>
+    <div class="modal-btns">
+      <button class="reset-pill" style="padding:8px 14px;" onclick="closeModal()">বাতিল</button>
+      <button class="tool-btn gold" style="padding:8px 14px;" onclick="saveCustom(false)">আপডেট করুন</button>
+      <button class="tool-btn" style="background:#0b132b;color:#fff;padding:8px 14px;" onclick="saveCustom(true)">Save as PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ PORTAL LOGIC ============ */
+const PORTAL_CHAPTERS = [
+  {
+    id: "pratyupakar",
+    sub: "bangla",
+    subName: "বাংলা ১ম পত্র",
+    title: "গদ্য: প্রত্যুপকার — ঈশ্বরচন্দ্র বিদ্যাসাগর",
+    desc: "শতভাগ হুবহু মূল পাঠ, লেখক-পরিচিতি, শব্দার্থ, পাঠ-পরিচিতি এবং ৯৩টি বোর্ড ও শীর্ষ স্কুলের প্রশ্ন বিশ্লেষণ।",
+    stats: ["বহুনির্বাচনি: ৬০টি", "জ্ঞান ও অনুধাবন: ২৭টি", "সৃজনশীল: ৬ সেট"],
+    live: true
+  },
+  {
+    id: "phy2",
+    sub: "physics",
+    subName: "পদার্থবিজ্ঞান",
+    title: "অধ্যায়-০২: গতি (Motion)",
+    desc: "সূত্রভিত্তিক বোর্ড বিশ্লেষণ, গ্রাফ, গাণিতিক বহুনির্বাচনি এবং সৃজনশীল সমাধান শীঘ্রই যুক্ত হচ্ছে।",
+    stats: ["সূত্র ও গ্রাফ", "গাণিতিক সমস্যা", "বোর্ড এনালাইসিস"],
+    live: false
+  },
+  {
+    id: "chem4",
+    sub: "chemistry",
+    subName: "রসায়ন",
+    title: "অধ্যায়-০৪: পর্যায় সারণি / রাসায়নিক বন্ধন",
+    desc: "বিক্রিয়া, ইলেকট্রন বিন্যাস ও বোর্ড প্রশ্নের পূর্ণাঙ্গ ইন্টারেক্টিভ ডিজিটাল বই শীঘ্রই যুক্ত হচ্ছে।",
+    stats: ["বিক্রিয়া ও সংকেত", "তত্ত্ব ও অংক", "বোর্ড এনালাইসিস"],
+    live: false
+  },
+  {
+    id: "bio2",
+    sub: "biology",
+    subName: "জীববিজ্ঞান",
+    title: "অধ্যায়-০২: জীবকোষ ও টিস্যু",
+    desc: "চিত্রভিত্তিক অংশ ও সব বোর্ডের বহুনির্বাচনি-সৃজনশীল ম্যাপিং শীঘ্রই যুক্ত হচ্ছে।",
+    stats: ["চিত্র ও বৈশিষ্ট্য", "জ্ঞান ও অনুধাবন", "সৃজনশীল"],
+    live: false
+  },
+  {
+    id: "math9",
+    sub: "math",
+    subName: "গণিত / উচ্চতর গণিত",
+    title: "অধ্যায়-০৯: ত্রিকোণমিতিক অনুপাত",
+    desc: "প্রতিটি উপপাদ্য ও সূত্রের সাথে বোর্ড অংক এবং সৃজনশীল সমাধান শীঘ্রই যুক্ত হচ্ছে।",
+    stats: ["সূত্র ও প্রমাণ", "বোর্ড অংক", "সৃজনশীল"],
+    live: false
+  }
+];
+
+let currentSub = "all";
+function setSub(sub, btn) {
+  currentSub = sub;
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPortalCards();
+}
+function renderPortalCards() {
+  const q = document.getElementById('portalSearch').value.trim().toLowerCase();
+  const list = PORTAL_CHAPTERS.filter(c => {
+    if (currentSub !== 'all' && c.sub !== currentSub) return false;
+    if (q && !(c.title + c.subName + c.desc).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  document.getElementById('portalGrid').innerHTML = list.map(c => `
+    <div class="p-card">
+      <div>
+        <div class="p-card-top">
+          <span class="sub-badge">${c.subName}</span>
+          <span class="${c.live ? 'status-live' : 'status-soon'}">${c.live ? '● লাইভ আছে' : 'শীঘ্রই আসছে'}</span>
+        </div>
+        <h2>${c.title}</h2>
+        <p>${c.desc}</p>
+        <div class="p-meta">${c.stats.map(s => `<span class="m-pill">${s}</span>`).join('')}</div>
+      </div>
+      <button class="open-btn ${c.live ? '' : 'disabled'}" ${c.live ? `onclick="openChapter('${c.id}')"` : 'disabled'}>
+        ${c.live ? 'ডিজিটাল বই ওপেন করুন →' : 'ছবি পেলেই তৈরি হবে'}
+      </button>
+    </div>
+  `).join('');
+}
+
+function openChapter(id) {
+  if (id !== 'pratyupakar') return;
+  document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('chapterView').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'instant'});
+}
+function goHome() {
+  toggleDrawer(false);
+  document.getElementById('chapterView').classList.add('hidden');
+  document.getElementById('homeView').classList.remove('hidden');
+  window.scrollTo({top: 0, behavior: 'instant'});
+}
+
+/* ============ CHAPTER DATA & ENGINE ============ */
+const BOARD_FULL = {
+  "ঢা.বো.'২৬": "ঢাকা বোর্ড ২০২৬",
+  "রা.বো.'২৬": "রাজশাহী বোর্ড ২০২৬",
+  "চ.বো.'২৬": "চট্টগ্রাম বোর্ড ২০২৬",
+  "সি.বো.'২৬": "সিলেট বোর্ড ২০২৬",
+  "ব.বো.'২৬": "বরিশাল বোর্ড ২০২৬",
+  "য.বো.'২৬": "যশোর বোর্ড ২০২৬",
+  "কু.বো.'২৬": "কুমিল্লা বোর্ড ২০২৬",
+  "দি.বো.'২৬": "দিনাজপুর বোর্ড ২০২৬",
+  "ম.বো.'২৬": "ময়মনসিংহ বোর্ড ২০২৬",
+  "দাখিল'২৬": "দাখিল বোর্ড ২০২৬"
+};
+function expandBoard(b) {
+  return b.split(';').map(x => { const t = x.trim(); return BOARD_FULL[t] || t; }).join(' ও ');
+}
+
+const MCQS = [
+  {id:1,lid:"L1",b:"ঢা.বো.'২৬",q:"'প্রত্যুপকার' গল্পে খলিফা মামুনের প্রিয়পাত্র কে ছিলেন?",o:["ডেমাস্কাসের শাসনকর্তা","আলী ইবনে আব্বাস","জনৈক সম্ভ্রান্ত ব্যক্তি","জনৈক প্রজা"],a:1},
+  {id:2,lid:"L_note_1a",b:"ঢা.বো.'২৬; রা.বো.'২৬",q:"'প্রত্যুপকার' শব্দের অর্থ কী?",o:["অপকার করা","উপকার অস্বীকার করা","উপকার করা","উপকারীর উপকার করা"],a:3},
+  {id:3,lid:"L26",b:"রা.বো.'২৬",q:"কোন আচরণে খলিফা মামুনের অতি উন্নত চিত্তের পরিচয় প্রকাশ পেয়েছে?",o:["আলী ইবনে আব্বাসকে বন্দির দায়িত্ব দেওয়ায়","আলী ইবনে আব্বাসের কথায় রাগান্বিত হওয়ায়","বিশ্বস্তসূত্রে বন্দির প্রকৃত পরিচয় জানায়","বন্দিকে সম্মানে মুক্তি দেওয়ায়"],a:3},
+  {id:4,lid:"L17",b:"চ.বো.'২৬",q:"'প্রত্যুপকার' গল্পে দামেস্কের সম্ভ্রান্ত ব্যক্তি আলী ইবনে আব্বাসের কাছে কী প্রার্থনা করেছিল?",o:["লৌহশৃঙ্খলমুক্ত করে দিতে","পালাতে সাহায্য করতে","উপকারীর উপকার করতে","প্রাণদণ্ডের খবর পরিবারকে জানাতে"],a:3},
+  {id:5,lid:"L26",b:"চ.বো.'২৬",q:"'প্রত্যুপকার' গল্পে বন্দি ব্যক্তিকে মুক্তি দেওয়ার মাধ্যমে খলিফা মামুনের কোন চারিত্রিক বৈশিষ্ট্য ফুটে উঠেছে?",o:["প্রত্যুপকারী","পরোপকারী","মহানুভব","দয়াশীল"],a:2},
+  {id:6,lid:"L2",b:"সি.বো.'২৬",q:"'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাস খলিফা মামুনের নিকট কখন বসে ছিলেন?",o:["পূর্বাহ্ণে","মধ্যাহ্নে","অপরাহ্ণে","সায়াহ্নে"],a:2},
+  {id:7,lid:"L20",b:"ব.বো.'২৬",u:"তরুতলে বসি পান্থ শ্রান্তি করে দূর\nফল আস্বাদনে পায় আনন্দ প্রচুর\nবিদায়ের কালে হাতে ডাল ভেঙে লয়\nতরু তবু অকাতর কিছু নাহি কয়।",q:"উদ্দীপকে তরুর মনোভাব ধারণ করেছে 'প্রত্যুপকার' গল্পের কোন চরিত্র?",o:["ডেমাস্কাসের সম্ভ্রান্ত ব্যক্তি","ডেমাস্কাসের পদচ্যুত শাসনকর্তা","আলী ইবনে আব্বাস","খলিফা মামুন"],a:0},
+  {id:8,lid:"L_note_1a",b:"ব.বো.'২৬",u:"(পূর্বোক্ত তরু ও পান্থের উদ্দীপক)",q:"'প্রত্যুপকার' গল্পের সাথে উদ্দীপকটির বৈসাদৃশ্য রয়েছে—",o:["পরোপকারে","প্রত্যুপকারে","বদান্যতায়","ধৈর্যশীলতায়"],a:1},
+  {id:9,lid:"L_note_5b",b:"য.বো.'২৬",u:"রহমান সাহেব সড়ক দুর্ঘটনায় আহত হলে তাকে রক্ত দিতে এগিয়ে আসেন সহকর্মী বিল্লাল। একসময় বিল্লালের বিপদে রহমান সাহেব ঝাঁপিয়ে পড়েছিলেন।",q:"উদ্দীপকের বিল্লাল হলেন 'প্রত্যুপকার' গল্পের—",o:["ডেমাস্কাসের আশ্রয়দাতা","খলিফা মামুন","পদচ্যুত শাসনকর্তা","আলী ইবনে আব্বাস"],a:3},
+  {id:10,lid:"L26",b:"য.বো.'২৬",q:"খলিফা মামুনকে মহামতি ও অতি উন্নতচিত্ত পুরুষ কী জন্য বলা হয়েছে?",o:["সুবিবেচনার","পরোপকারিতার","কৃতজ্ঞতাবোধের","সুশিক্ষিত হওয়ার"],a:0},
+  {id:11,lid:"L_note_5a",b:"কু.বো.'২৬",q:"'প্রত্যুপকার' রচনাটি কোন গ্রন্থ থেকে সংকলিত হয়েছে?",o:["আখ্যানমঞ্জরী দ্বিতীয় ভাগ","আখ্যানমঞ্জরী প্রথম ভাগ","মরুদুলাল","ঋজুপাঠ"],a:0},
+  {id:12,lid:"L19",b:"দি.বো.'২৬",q:"'প্রত্যুপকার' গল্পে প্রকাশ পেয়েছে আলী ইবনে আব্বাসের—",o:["মহানুভবতা","বিচক্ষণতা","পরোপকারিতা","বদান্যতা"],a:0},
+  {id:13,lid:"L14",b:"দি.বো.'২৬",q:"“এ জন্য পৃথিবীতে যত স্থান আছে ঐ স্থান আমার সর্বাপেক্ষা প্রিয়।”— আলী ইবনে আব্বাসের এই উক্তিতে প্রকাশ পেয়েছে—",o:["উদারতা","সহনশীলতা","মমত্ববোধ","মহত্ত্ববোধ"],a:2},
+  {id:14,lid:"L_note_1b",b:"ম.বো.'২৬",q:"'সমভিব্যাহার' শব্দের অর্থ কী?",o:["সম্বোধন","সকৃতজ্ঞ","সম্মিলিত","সাহচর্য"],a:3},
+  {id:15,lid:"L8",b:"ম.বো.'২৬",q:"'গৃহস্বামী আমায় অভয় প্রদান করিলেন'— এখানে গৃহস্বামীর কোন বৈশিষ্ট্য প্রকাশ পেয়েছে?",o:["অতিথি পরায়ণতা","মহানুভবতা","দানশীলতা","প্রত্যুপকার"],a:1},
+  {id:16,lid:"L_note_5b",b:"ম.বো.'২৬",q:"'প্রত্যুপকার' গল্পে সকৃতজ্ঞ প্রত্যুপকারী ব্যক্তিটি কে?",o:["খলিফা মামুন","ডেমাস্কাসের আশ্রয়দাতা","ডেমাস্কাসের নতুন শাসক","আলী ইবনে আব্বাস"],a:3},
+  {id:17,lid:"L18",b:"দাখিল'২৬",q:"'প্রত্যুপকার' রচনায় আলী ইবনে আব্বাস বন্দি ব্যক্তিকে মুক্ত করেছিলেন কেন?",o:["খলিফাকে খুশি করতে","উপকারের প্রতিদান দিতে","বন্দির কাছ থেকে পুরস্কারের লোভে","বন্দির স্বজনদের অনুরোধে"],a:1},
+  {id:18,lid:"L11",b:"দাখিল'২৬",q:"'তিনি, আমার আকার প্রকার দর্শনে, তাহা বুঝিতে পারিলেন'— 'প্রত্যুপকার' গল্পে এখানে কী বুঝতে পারার কথা বলা হয়েছে?",o:["শত্রু ভয়ের","অর্থ সংকটের","প্রতিশোধ পরায়ণতার","স্বদেশ প্রীতির"],a:1},
+  {id:19,lid:"L_note_4",b:"মূল বই; তেজগাঁও সরকারি বালক উচ্চ বিদ্যালয়",q:"খলিফা মামুন কোথাকার শাসনকর্তা ছিলেন?",o:["বাগদাদ","ডেমাস্কাস","সিরিয়া","ইরান"],a:0},
+  {id:20,lid:"L26",b:"মূল বই",u:"সে বিস্ময়াবহ কাহিনি শুনিয়া নৃপতি মুগ্ধ হইলেন। বহুদিনের বিদ্বেষভাব দূরে গেল, ভক্তিতে অন্তর আর্দ্র হইল। প্রেমের জয় হইল। নৃপতির কণ্ঠে হাতেমের জয়গান। তাঁহার কণ্ঠ ভেদিয়া উত্থিত হইল— ধন্য হাতেম, ধন্য তাহার কূল!",q:"নৃপতির মাধ্যমে 'প্রত্যুপকার' গল্পের খলিফার কোন বৈশিষ্ট্য প্রকাশ পেয়েছে?",o:["বদান্যতা","মহানুভবতা","দানশীলতা","ঔচিত্যবোধ"],a:1},
+  {id:21,lid:"L19",b:"মতিঝিল মডেল স্কুল এন্ড কলেজ, ঢাকা",q:"কার প্রাণ রক্ষা আলী ইবনে আব্বাসের কাছে প্রধান গুরুত্ব ছিল?",o:["আশ্রয়দাতার","দামেস্কের শাসনকর্তার","তার নিজের","খলিফার"],a:0},
+  {id:22,lid:"L25",b:"পুলিশ লাইনস্ আদর্শ উচ্চ বিদ্যালয়, টাঙ্গাইল",q:"“আমার এরূপ বোধ ও বিশ্বাস হয় না”— কার?",o:["খলিফার","বন্দির","আলী ইবনে আব্বাসের","নতুন শাসনকর্তার"],a:2},
+  {id:23,lid:"L27",b:"জালালাবাদ ক্যান্টনমেন্ট পাবলিক স্কুল এন্ড কলেজ",q:"খলিফা কাকে প্রাণদণ্ড হতে অব্যাহতি দিয়েছেন?",o:["আলী ইবনে আব্বাসকে","শাসনকর্তাকে","আলী ইবনে আব্বাসের আশ্রয়দাতাকে","ঘাতককে"],a:2},
+  {id:24,lid:"L28",b:"সিভিল এভিয়েশন স্কুল এন্ড কলেজ, তেজগাঁও",q:"খলিফা বন্দি উপহার প্রদান করেছিল— (i) দশ অশ্ব (ii) দশ খচ্চর (iii) মূল্যবান রত্ন-পাথর। নিচের কোনটি সঠিক?",o:["i, iii","ii, iii","i, ii","i, ii, iii"],a:2},
+  {id:25,lid:"L_note_5b",b:"মতিঝিল মডেল স্কুল এন্ড কলেজ, ঢাকা",q:"'প্রত্যুপকার' রচনায় যাদের মহৎ ব্যক্তিত্বের বর্ণনা পাওয়া যায়, তারা হলেন— (i) খলিফা মামুন (ii) দামেস্কের নিঃস্বার্থ আশ্রয়দাতা (iii) আলী ইবনে আব্বাস। নিচের কোনটি সঠিক?",o:["i, ii","i, iii","ii, iii","i, ii, iii"],a:3},
+  {id:26,lid:"L5",b:"ইকো পাঠশালা স্কুল এন্ড কলেজ, ঠাকুরগাঁও; আঞ্চলিক কৃষি গবেষণা কেন্দ্র উচ্চ বিদ্যালয়, পাবনা",q:"'প্রত্যুপকার' গল্পে বন্দি ব্যক্তি কোথাকার অধিবাসী?",o:["বাগদাদ","ডেমাস্কাস","লেবানন","ইরান"],a:1},
+  {id:27,lid:"L4",b:"তেজগাঁও সরকারি বালিকা উচ্চ বিদ্যালয়",q:"বন্দি লোক পালিয়ে গেলে আলী ইবনে আব্বাসের কী পরিণতি হবে?",o:["খলিফার কোপে পতিত হবে","মৃত্যুদণ্ড হবে","বিতাড়িত হবে","কারাবন্দি হবে"],a:0},
+  {id:28,lid:"L12",b:"জালালাবাদ ক্যান্টনমেন্ট পাবলিক স্কুল এন্ড কলেজ",q:"আলী ইবনে আব্বাসের স্বদেশে প্রতিগমনের বাহন হিসেবে কী প্রস্তুত ছিল?",o:["সুসজ্জিত গাড়ি","সুসজ্জিত হাতি","সুসজ্জিত গাধা","সুসজ্জিত অশ্ব"],a:3},
+  {id:29,lid:"L_bio_2",b:"আঞ্চলিক কৃষি গবেষণা কেন্দ্র উচ্চ বিদ্যালয়, পাবনা",q:"ঈশ্বরচন্দ্র বিদ্যাসাগরের খ্যাতি লাভের অন্যতম কারণ— (i) একাধিক ভাষায় পাণ্ডিত্য অর্জন (ii) উচ্চবংশীয় (iii) বদান্যতা। নিচের কোনটি সঠিক?",o:["i, ii","i, iii","ii, iii","i, ii, iii"],a:1},
+  {id:30,lid:"L28",b:"ঢাকা রেসিডেনসিয়াল মডেল কলেজ",q:"খলিফা বন্দিকে মুক্তি দিয়ে কোন কোন প্রাণী উপহার প্রদান করেন?",o:["অশ্ব, খচ্চর, উষ্ট্র","অশ্ব, হস্তি, উষ্ট্র","অশ্ব, খচ্চর, হস্তি","অশ্ব, মেষ, উষ্ট্র"],a:0},
+  {id:31,lid:"L_bio_3",b:"ইকো পাঠশালা স্কুল এন্ড কলেজ, ঠাকুরগাঁও",q:"ঈশ্বরচন্দ্র বিদ্যাসাগরকে বাংলা গদ্যের জনক বলা হয় কেন?",o:["দানশীলতার জন্য","অসামান্য মেধার জন্য","সাহিত্যিক গদ্য রচনার জন্য","সংস্কৃত কলেজে অধ্যাপনার জন্য"],a:2},
+  {id:32,lid:"L_note_2",b:"সিভিল এভিয়েশন স্কুল এন্ড কলেজ, তেজগাঁও",q:"দামেস্ক কোন দেশের রাজধানী?",o:["মিশর","ইরান","ইরাক","সিরিয়া"],a:3},
+  {id:33,lid:"L10",b:"বিদ্যাময়ী সরকারি বালিকা উচ্চ বিদ্যালয়, ময়মনসিংহ",q:"“একদিন আশ্রয়দাতা আমায় বলিলেন”— কাকে?",o:["আলী ইবনে আব্বাসকে","বন্দি ব্যক্তিকে","খলিফাকে","জনৈক ব্যক্তিকে"],a:0},
+  {id:34,lid:"L_note_3",b:"গভর্নমেন্ট সায়েন্স হাই স্কুল, তেজগাঁও",q:"খলিফা মামুন ছিলেন—",o:["৭ম আব্বাসীয় খলিফা","৮ম আব্বাসীয় খলিফা","৬ষ্ঠ আব্বাসীয় খলিফা","৫ম আব্বাসীয় খলিফা"],a:0},
+  {id:35,lid:"L_bio_4",b:"আঞ্চলিক কৃষি গবেষণা কেন্দ্র উচ্চ বিদ্যালয়, পাবনা",q:"ভাষা শিক্ষাদানের ক্ষেত্রে কোন বই আজও পথপ্রদর্শক বিবেচিত হয়?",o:["বর্ণপরিচয়","ব্যাকরণ কৌমুদী","গৌড়ীয় ব্যাকরণ","ভাষা প্রকাশ"],a:0},
+  {id:36,lid:"L_bio_3",b:"বিদ্যাময়ী সরকারি বালিকা উচ্চ বিদ্যালয়, ময়মনসিংহ",q:"বাংলা গদ্যের জনক কে?",o:["বঙ্কিমচন্দ্র চট্টোপাধ্যায়","ঈশ্বরচন্দ্র বিদ্যাসাগর","প্রমথ চৌধুরী","রবীন্দ্রনাথ ঠাকুর"],a:1},
+  {id:37,lid:"L8",b:"নাটোর সরকারি বালক উচ্চ বিদ্যালয়",q:"আলী ইবনে আব্বাস কোন শহরে একজন সম্ভ্রান্ত ব্যক্তির আশ্রয় লাভ করেন?",o:["বাগদাদ","বসরা","কায়রো","দামেস্ক"],a:3},
+  {id:38,lid:"L16",b:"আঞ্জুমান আদর্শ সরকারি উচ্চ বিদ্যালয়, নেত্রকোণা",q:"আলী ইবনে আব্বাস কীভাবে আশ্রয়দাতাকে চিনতে পারলেন?",o:["কথা শুনে","চিৎকার শুনে","নিরীক্ষণ করে","পরিচয় দিয়ে"],a:2},
+  {id:39,lid:"L8",b:"ইকো পাঠশালা স্কুল এন্ড কলেজ, ঠাকুরগাঁও",q:"‘আমার প্রার্থনাবাক্য শুনিয়া গৃহস্বামী আমায় অভয় প্রদান করিলেন’— এখানে গৃহস্বামী—",o:["খলিফা","পদচ্যুত শাসনকর্তা","আলী ইবনে আব্বাস","বন্দি ব্যক্তি"],a:3},
+  {id:40,lid:"L19",b:"নাটোর সরকারি বালক উচ্চ বিদ্যালয়",q:"'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাস কাকে সবচেয়ে বেশি শ্রদ্ধা করেন?",o:["খলিফা মামুনকে","তার আশ্রয়দাতাকে","সৈন্যদের","তার পরিবারের সদস্যদের"],a:1},
+  {id:41,lid:"L9",b:"নারিন্দা সরকারি উচ্চ বিদ্যালয়",q:"আলী ইবনে আব্বাস আশ্রয়দাতার বাড়িতে কতদিন আশ্রিত ছিলেন?",o:["এক সপ্তাহ","দুই সপ্তাহ","এক মাস","তিন মাস"],a:2},
+  {id:42,lid:"L23",b:"নাটোর সরকারি বালক উচ্চ বিদ্যালয়",q:"আলী ইবনে আব্বাস যখন খলিফার কাছে বন্দির জন্য সুপারিশ করেন, তখন খলিফা কী বলেন?",o:["তাকে ধৈর্য ধরতে বলেন","তাকে প্রাণদণ্ড দেওয়ার হুমকি দেন","তাকে পুরস্কার দেওয়ার প্রতিশ্রুতি দেন","তাকে রাজপ্রতিনিধি করে পাঠান"],a:1},
+  {id:43,lid:"L20",b:"আঞ্চলিক কৃষি গবেষণা কেন্দ্র উচ্চ বিদ্যালয়, পাবনা",u:"তারেক তার বন্ধু সামাদের কাছ থেকে টাকা ধার নিয়ে ব্যাবসা করে অনেক সম্পদের মালিক হয়। সামাদ তার টাকা চাইতে গেলে তারেক তা অস্বীকার করে। বন্ধুকে অপমান করে বাড়ি থেকে তাড়িয়ে দেয়।",q:"উদ্দীপকের তারেক 'প্রত্যুপকার' গল্পের আব্বাসের সঙ্গে কোন দিক দিয়ে বৈসাদৃশ্যপূর্ণ—",o:["অকৃতজ্ঞতায়","প্রত্যুপকারে","কৃতঘ্নতায়","স্বার্থপরতায়"],a:3},
+  {id:44,lid:"L20",b:"আঞ্চলিক কৃষি গবেষণা কেন্দ্র উচ্চ বিদ্যালয়, পাবনা",q:"উভয়ের মধ্যে সাদৃশ্য হতে হলে তারেককে যা করতে হবে— (i) বন্ধুর প্রতি কৃতজ্ঞ হতে হবে (ii) টাকা ফেরত দিতে হবে (iii) ক্ষমা চাইতে হবে। নিচের কোনটি সঠিক?",o:["i, ii","i, iii","ii, iii","i, ii, iii"],a:0},
+  {id:45,lid:"L13",b:"সম্ভাব্য প্রশ্ন",q:"গৃহস্বামী আলী ইবনে আব্বাসকে থলিতে কী দিয়েছিলেন?",o:["স্বর্ণমুদ্রা","রৌপ্যমুদ্রা","তাম্রমূদ্রা","আটা"],a:0},
+  {id:46,lid:"L26",b:"সম্ভাব্য প্রশ্ন",q:"'প্রত্যুপকার' গল্পে কে মহামতি ও অতি উন্নতচিত্ত পুরুষ ছিলেন?",o:["আলী ইবনে আব্বাস","গৃহস্বামী","খলিফা আমিন","খলিফা মামুন"],a:3},
+  {id:47,lid:"L20",b:"সম্ভাব্য প্রশ্ন",q:"“আমি এত নীচাশয় ও স্বার্থপর নহি” উক্তিটি—",o:["খলিফার","বন্দি লোকটির","আলী ইবনে আব্বাসের","পদচ্যুত শাসন কর্তার"],a:1},
+  {id:48,lid:"L2",b:"সম্ভাব্য প্রশ্ন",q:"হাত-পা বাঁধা ব্যক্তিটিকে খলিফার নিকট কখন আনা হয়েছিল?",o:["প্রভাতে","অপরাহ্ণে","সন্ধ্যায়","রাতে"],a:1},
+  {id:49,lid:"L3",b:"সম্ভাব্য প্রশ্ন",q:"খলিফা বন্দিকে কোথায় রুদ্ধ করার আদেশ দিয়েছিলেন?",o:["আলী ইবনে আব্বাসের বাড়িতে","খলিফার বাড়িতে","কয়েদখানায়","অন্ধকার প্রকোষ্ঠে"],a:0},
+  {id:50,lid:"L5",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাসকে আশ্রয়দানকারী ব্যক্তি কোথায় বাস করতেন?",o:["দামেস্কের বৃহৎ মসজিদের পাশে","টাইগ্রিস নদীর তীরে","মক্কার উপকণ্ঠে","বাগদাদ নগরীতে"],a:0},
+  {id:51,lid:"L7",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাসের ওপর আক্রমণ করেছিল— (i) ডেমাস্কাসের পদচ্যুত শাসনকর্তা (ii) পদচ্যুত শাসন কর্তার সৈন্যদল (iii) ডেমাস্কাসের নতুন শাসনকর্তা। নিচের কোনটি সঠিক?",o:["i","ii, iii","i, ii","i, ii, iii"],a:2},
+  {id:52,lid:"L11",b:"সম্ভাব্য প্রশ্ন",q:"“লজ্জাবশত আমি তাঁহার নিকট সে কথা ব্যক্ত করিতে পারিলাম না।” এখানে কোন কথাকে নির্দেশ করা হয়েছে?",o:["অর্থের অভাব","খলিফার আদেশ","জীবন নাশের আশঙ্কা","করুণ পরিণতি"],a:0},
+  {id:53,lid:"L13",b:"সম্ভাব্য প্রশ্ন",q:"জনৈক ব্যক্তির ক্ষেত্রে প্রযোজ্য গুণ— (i) দয়াময় (ii) সদাশয় (iii) উপকারী। নিচের কোনটি সঠিক?",o:["i, ii","ii, iii","i, iii","i, ii, iii"],a:3},
+  {id:54,lid:"L_note_5b",b:"সম্ভাব্য প্রশ্ন",u:"একদিন এক চাষি একটি ঈগলকে ফাঁদ থেকে মুক্ত করে দেয়। ঈগলটি সে উপকারের কথা ভোলেনি। অন্য একদিন চাষিটিকে একটি সাপ আক্রমণ করার চেষ্টা করলে ঈগলটি পাখিটি সেই সাপকে হত্যা করে চাষিকে রক্ষা করে।",q:"উদ্দীপকের ঈগলটি 'প্রত্যুপকার' গল্পের কোন চরিত্রকে নির্দেশ করে?",o:["খলিফা","জনৈক ব্যক্তি","আলী ইবনে আব্বাস","হারুনর রশীদ"],a:2},
+  {id:55,lid:"L_note_5b",b:"সম্ভাব্য প্রশ্ন",q:"অনুচ্ছেদটির মূল প্রতিপাদ্য বিষয়—",o:["উপকারীর উপকার","উপকারীর অপকার","মহানুভবতা","ঔচিত্যবোধ"],a:0},
+  {id:56,lid:"L_bio_4",b:"সম্ভাব্য প্রশ্ন",q:"'বর্ণ পরিচয়' বইটি কত সালে প্রকাশিত হয়?",o:["১৮৫০","১৮৪৯","১৮৫৫","১৮৫৭"],a:2},
+  {id:57,lid:"L_bio_5",b:"সম্ভাব্য প্রশ্ন",q:"ঈশ্বরচন্দ্র বিদ্যাসাগর কবে মৃত্যুবরণ করেন?",o:["১৮৯২ সালের ২৯ শে জুলাই","১৮৯১ সালের ২৯ শে জুলাই","১৮৯০ সালের ৩০ শে জুলাই","১৮৯০ সালের ২০ শে এপ্রিল"],a:1},
+  {id:58,lid:"L_note_1d",b:"সম্ভাব্য প্রশ্ন",q:"'প্রতীতি' শব্দের অর্থ কী?",o:["সম্প্রীতি","অতৃপ্ত","বিশ্বাস","প্রফুল্ল"],a:2},
+  {id:59,lid:"L_note_4",b:"সম্ভাব্য প্রশ্ন",q:"খলিফা মামুনের শাসনকালে কোন শহরটি রাজধানী ছিল?",o:["বাগদাদ","দামেস্ক","কায়রো","বসরা"],a:0},
+  {id:60,lid:"L12",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাসের আশ্রয়দাতা তাকে কী দিয়ে সাহায্য করেছিলেন?",o:["অর্থ ও অশ্ব","খাদ্য ও বিশ্রামের স্থান","নিরাপদে প্রস্থানের সুযোগ","উল্লিখিত সবগুলো"],a:3}
+];
+
+const SQS = [
+  {id:"জ্ঞানমূলক ০১",kind:"জ্ঞানমূলক (ক)",lid:"L1",b:"রা.বো.'২৬",q:"আলী ইবনে আব্বাস কোন খলিফার প্রিয় পাত্র ছিলেন?",a:"আলী ইবনে আব্বাস খলিফা মামুনের প্রিয়পাত্র ছিলেন।"},
+  {id:"জ্ঞানমূলক ০২",kind:"জ্ঞানমূলক (ক)",lid:"L_note_2",b:"ব.বো.'২৬",q:"দামেস্ক বর্তমানে কোন দেশের রাজধানী?",a:"দামেস্ক বর্তমানে সিরিয়ার রাজধানী।"},
+  {id:"জ্ঞানমূলক ০৩",kind:"জ্ঞানমূলক (ক)",lid:"L_note_3",b:"কু.বো.'২৬",q:"খলিফা মামুনের পূর্ণ নাম কী?",a:"খলিফা মামুনের পূর্ণ নাম হলো আবুল আব্বাস আবদুল্লাহ আল মামুন।"},
+  {id:"জ্ঞানমূলক ০৪",kind:"জ্ঞানমূলক (ক)",lid:"L5",b:"ম.বো.'২৬",q:"'প্রত্যুপকার' গল্পের বন্দি ব্যক্তির জন্মস্থান কোথায়?",a:"'প্রত্যুপকার' গল্পের বন্দি ব্যক্তির জন্মস্থান ডেমাস্কাস।"},
+  {id:"জ্ঞানমূলক ০৫",kind:"জ্ঞানমূলক (ক)",lid:"L_note_1a",b:"মূল বই; মতিঝিল মডেল স্কুল এন্ড কলেজ; নাটোর সরকারি বালক উচ্চ বিদ্যালয়",q:"'প্রত্যুপকার' শব্দের অর্থ কী?",a:"'প্রত্যুপকার' শব্দের অর্থ উপকারীর উপকার করা।"},
+  {id:"জ্ঞানমূলক ০৬",kind:"জ্ঞানমূলক (ক)",lid:"L_note_3",b:"বি এ এফ শাহীন কলেজ",q:"খলিফা মামুন কততম আব্বাসীয় খলিফা?",a:"খলিফা মামুন সপ্তম আব্বাসীয় খলিফা ছিলেন।"},
+  {id:"জ্ঞানমূলক ০৭",kind:"জ্ঞানমূলক (ক)",lid:"L_note_1c",b:"ভিকারুননিসা নূন স্কুল এন্ড কলেজ",q:"'কোপানল' শব্দের অর্থ কী?",a:"'কোপানল' শব্দের অর্থ হলো ক্রোধ বা রাগের আগুন।"},
+  {id:"জ্ঞানমূলক ০৮",kind:"জ্ঞানমূলক (ক)",lid:"L_note_3",b:"বরিশাল জিলা স্কুল",q:"খলিফা মামুনের পিতার নাম কী?",a:"খলিফা মামুনের পিতার নাম খলিফা হারুনর রশীদ।"},
+  {id:"জ্ঞানমূলক ০৯",kind:"জ্ঞানমূলক (ক)",lid:"L28",b:"সম্ভাব্য প্রশ্ন",q:"খলিফা মামুন বন্দি লোকটিকে কতটি উট উপহার দিয়েছিলেন?",a:"খলিফা মামুন বন্দি লোকটিকে ১০টি উট উপহার দিয়েছিলেন।"},
+  {id:"জ্ঞানমূলক ১০",kind:"জ্ঞানমূলক (ক)",lid:"L_note_3",b:"সম্ভাব্য প্রশ্ন",q:"খলিফা মামুন হারুনর রশীদের কত তম পুত্র ছিলেন?",a:"খলিফা মামুন হারুনর রশীদের দ্বিতীয় পুত্র ছিলেন।"},
+  {id:"জ্ঞানমূলক ১১",kind:"জ্ঞানমূলক (ক)",lid:"L9",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাস কতদিন ডেমাস্কাসের আশ্রয়দাতার বাড়িতে ছিলেন?",a:"আলী ইবনে আব্বাস একমাস ডেমাস্কাসের আশ্রয়দাতার বাড়িতে ছিলেন।"},
+  {id:"জ্ঞানমূলক ১২",kind:"জ্ঞানমূলক (ক)",lid:"L14",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাসের সবচেয়ে প্রিয় স্থান কোনটি?",a:"আলী ইবনে আব্বাসের সবচেয়ে প্রিয় স্থান ডেমাস্কাস।"},
+  {id:"জ্ঞানমূলক ১৩",kind:"জ্ঞানমূলক (ক)",lid:"L22",b:"সম্ভাব্য প্রশ্ন",q:"আলী ইবনে আব্বাস কখন খলিফার নিকট উপস্থিত হয়েছিলেন?",a:"গৃহস্বামীকে বন্দি করার পরদিন প্রাতঃকালে আলী ইবনে আব্বাস খলিফার নিকট উপস্থিত হয়েছিলেন।"},
+  {id:"জ্ঞানমূলক ১৪",kind:"জ্ঞানমূলক (ক)",lid:"L_note_4",b:"সম্ভাব্য প্রশ্ন",q:"বাগদাদ নগরী প্রতিষ্ঠা করেন কে?",a:"আব্বাসীয় খলিফা মনসুর ৭৬৩ খ্রিষ্টাব্দে বাগদাদ নগরী প্রতিষ্ঠা করেন।"},
+  {id:"জ্ঞানমূলক ১৫",kind:"জ্ঞানমূলক (ক)",lid:"L_note_4",b:"সম্ভাব্য প্রশ্ন",q:"বাগদাদ কোন খলিফার শাসনামলে মুসলিম সভ্যতার শ্রেষ্ঠ নগরীতে পরিণত হয়?",a:"খলিফা হারুনর রশীদের শাসনামলে বাগদাদ মুসলিম সভ্যতার অন্যতম শ্রেষ্ঠ নগরীতে পরিণত হয়।"},
+
+  {id:"অনুধাবন ০১",kind:"অনুধাবনমূলক (খ)",lid:"L4",b:"রা.বো.'২৬",q:"আলী ইবনে আব্বাস, হাত, পা, বাধা ব্যক্তিকে অতি সাবধানে রুদ্ধ করে রেখেছিল কেন?",a:"খলিফার রোষ বা ক্রোধ থেকে নিজেকে রক্ষা করার জন্যই আলী ইবনে আব্বাস হাত-পা বাঁধা ব্যক্তিকে অতি সাবধানে রুদ্ধ করে রেখেছিলেন।\nখলিফা মামুন অত্যন্ত ক্রুদ্ধ হয়ে একজন হাত-পা বাঁধা বন্দিকে আলী ইবনে আব্বাসের হাতে তুলে দিয়ে পরদিন হাজির করার নির্দেশ দেন। বন্দি যদি কোনোভাবে পালিয়ে যায়, তবে খলিফার চরম শাস্তি ও কোপে তাঁকেই পড়তে হবে এই ভয়ের কারণেই তিনি বন্দিকে নিজ বাড়িতে নিয়ে অতি সাবধানে আটকে রাখেন।"},
+  {id:"অনুধাবন ০২",kind:"অনুধাবনমূলক (খ)",lid:"L15",b:"কু.বো.'২৬",q:"“আপনার মনস্কাম পূর্ণ হইয়াছে।”- বুঝিয়ে লেখ।",a:"প্রশ্নোক্ত উক্তিটি বন্দি ব্যক্তি আলী ইবনে আব্বাসকে উদ্দেশ্য করে বলেন।\nডেমাস্কাসের এক সম্ভ্রান্ত গৃহস্বামী আলী ইবনে আব্বাসকে সেখানকার পদচ্যুত শাসনকর্তার আক্রমণ থেকে রক্ষা করেন। একমাস পর সেখান থেকে আসার পর তিনি আশ্রয়দাতা ব্যক্তির সাথে আর যোগাযোগ করতে পারেননি। তাঁর কোনো উপকারও করতে পারেননি। অদৃষ্টের পরিহাসে সেই গৃহস্বামী আসামি হয়ে আসেন খলিফা মামুনের দরবারে। খলিফা মামুন আসামিকে আলী ইবনে আব্বাসের বাড়িতে বন্দি করে রাখতে বলেন। আলী ইবনে আব্বাস আসামির কাছে ডেমাস্কাসের ঘটনা বর্ণনা করেন এবং সেই গৃহস্বামীর প্রতি কৃতজ্ঞতা প্রকাশের আকাঙ্ক্ষা ব্যক্ত করেন। তখন গৃহস্বামী নিজের পরিচয় দিয়ে বলেন— আপনার মনস্কাম পূর্ণ হইয়াছে। অর্থাৎ আলী ইবনে আব্বাস চাইলে এখন গৃহস্বামীর উপকারের প্রতিদান দিতে পারবে।"},
+  {id:"অনুধাবন ০৩",kind:"অনুধাবনমূলক (খ)",lid:"L27",b:"ম.বো.'২৬",q:"“বলিতে গেলে তোমা হইতেই তাহার প্রাণ রক্ষা হইল”— ব্যাখ্যা করো।",a:"খলিফা মামুন আলী ইবনে আব্বাসের কৃতজ্ঞতাবোধ ও সাহসিকতার প্রশংসা করে আলোচ্য উক্তিটি করেছেন।\n'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাস নিজের জীবনের চরম ঝুঁকি নিয়ে খলিফার কাছে তাঁর উপকারীর প্রাণভিক্ষা চেয়েছিলেন। তিনি খলিফাকে সেই বন্দির অতীত দয়াশীলতা, ন্যায়পরায়ণতা ও পরোপকারের কথা বিস্তারিত জানান। তাঁর এই সাহসী ও সত্যনিষ্ঠ বর্ণনার কারণেই খলিফার ক্রোধ দূর হয় এবং তিনি নির্দোষ বন্দিকে ক্ষমা করে মুক্তি দেন। এ কারণেই খলিফা স্বীকার করেছেন, আলী ইবনে আব্বাসের ঐকান্তিক প্রচেষ্টাতেই বন্দি নিশ্চিত প্রাণদণ্ড থেকে বেঁচে গেছে।"},
+  {id:"অনুধাবন ০৪",kind:"অনুধাবনমূলক (খ)",lid:"L26",b:"ব.বো.'২৬; মূল বই",q:"খলিফা মামুন কিছুক্ষণ মৌন হয়েছিলেন কেন?",a:"আলী ইবনে আব্বাসের কাছে বন্দির ব্যাপারে ইতিবাচক কথা শুনে খলিফা মামুন কিছুক্ষণ মৌন হয়েছিলেন।\nখলিফা কর্তৃক দণ্ডপ্রাপ্ত বন্দি ব্যক্তি ছিলেন অতিশয় দয়াশীল ও ন্যায়পরায়ণ। মিথ্যা অভিযোগে তিনি দণ্ডপ্রাপ্ত হয়েছিলেন। কিন্তু আলী ইবনে আব্বাসের কাছে তাঁর ডেমাস্কাস নগরে আশ্রয়দান ও প্রাণরক্ষার ঘটনা শুনে খলিফা কিছুক্ষণ মৌনাবলম্বন করে ছিলেন।"},
+  {id:"অনুধাবন ০৫",kind:"অনুধাবনমূলক (খ)",lid:"L20",b:"বি এ এফ শাহীন কলেজ; বরিশাল জিলা স্কুল",q:"“আমি এত নীচাশয় ও স্বার্থপর নহি”- গৃহস্বামী এই উক্তি করেছিলেন কেন?",a:"আলী ইবনে আব্বাসের আশ্রয়দাতা গৃহস্বামীর মৃত্যুদণ্ডাদেশ হলে আলী ইবনে আব্বাস নিজের জীবনের বিনিময়ে হলেও তাঁকে রক্ষার প্রতিশ্রুতি দেন। গৃহস্বামী তাঁর এই প্রস্তাব শুনে উক্তিটি করেন।\nগৃহস্বামী আরও বলেন, কিছুদিন পূর্বে যার প্রাণ রক্ষা করেছি, এখন নিজের প্রাণ রক্ষার্থে তার বিনাশের কারণ হবো, তা কখনোই হবে না। অতঃপর তিনি অন্য উপায়ে খলিফার রাগ দমন করার চেষ্টা করতে বলেন।"},
+  {id:"অনুধাবন ০৬",kind:"অনুধাবনমূলক (খ)",lid:"L27",b:"ভিকারুননিসা নূন স্কুল এন্ড কলেজ, ঢাকা",q:"“তিনি প্রাণদণ্ড হতে অব্যাহতি পেলেন”— উক্তিটি কোন প্রসঙ্গে করা হয়েছে?",a:"খলিফা মামুন যখন আলী ইবনে আব্বাসের কাছে তাঁর আশ্রয়দাতার মহৎ গুণাবলির কথা শোনেন, সেই প্রসঙ্গে “তিনি প্রাণদণ্ড হতে অব্যাহতি পেলেন” উক্তিটি করা হয়েছে।\nআলী ইবনে আব্বাস খলিফাকে জানান যে, ঐ বন্দি ব্যক্তি নিঃস্বার্থভাবে দামেস্কে তাঁর প্রাণ রক্ষা করেছিলেন এবং বর্তমানে নিজের জীবন বিপন্ন হবে জেনেও আলী ইবনে আব্বাসের ক্ষতি করে পালাতে রাজি হননি। বন্দির এরূপ দয়াশীল ও ন্যায়পরায়ণতার কথা শুনে খলিফা অত্যন্ত আনন্দিত হন এবং তাঁকে মৃত্যুদণ্ড থেকে মুক্তি দেন।"},
+  {id:"অনুধাবন ০৭",kind:"অনুধাবনমূলক (খ)",lid:"L21",b:"মতিঝিল মডেল স্কুল এন্ড কলেজ, ঢাকা",q:"আলী ইবনে আব্বাস কেন বন্দির জন্য খলিফার কাছে সুপারিশ করেছিলেন?",a:"আলী ইবনে আব্বাস তাঁর উপকারীর প্রাণ রক্ষার জন্য কৃতজ্ঞতাবশত বন্দির হয়ে খলিফার কাছে সুপারিশ করেছিলেন।\nবন্দি ব্যক্তিটি একসময় দামেস্কে আলী ইবনে আব্বাসের প্রাণ রক্ষা করেছিলেন। আলী ইবনে আব্বাস যখন জানতে পারেন যে খলিফার আদেশে তাঁর হাতে বন্দি ব্যক্তিটিই তাঁর সেই উপকারকারী, তখন তিনি তাঁকে মুক্ত করতে চান। কিন্তু বন্দি ব্যক্তি নিজের জীবনের বিনিময়ে আলী ইবনে আব্বাসকে বিপদে ফেলতে রাজি হন না। তিনি আলী ইবনে আব্বাসকে খলিফার কাছে তাঁর নির্দোষিতার কথা বলে খলিফাকে শান্ত করার চেষ্টা করতে অনুরোধ করেন এবং বলেন যে, এটাই হবে প্রকৃত কৃতজ্ঞতা জানানো। উপকারীর জীবন বাঁচানো এবং তাঁর অনুরোধ রক্ষা— এই দুই কারণেই আলী ইবনে আব্বাস খলিফার কাছে সুপারিশ করেছিলেন।"},
+  {id:"অনুধাবন ০৮",kind:"অনুধাবনমূলক (খ)",lid:"L26",b:"সম্ভাব্য প্রশ্ন",q:"“খলিফা মামুন দণ্ডাদেশ প্রদানে সিদ্ধহস্ত হলেও তিনি ছিলেন কৃপার সাগর”- উক্তিটি ব্যাখ্যা করো।",a:"এখানে একসাথে খলিফা মামুনের কঠোরতা ও কোমলতার চিত্র ফুটে উঠেছে।\nখলিফা মামুন ডেমাস্কাসের এক সম্ভ্রান্ত গৃহস্বামীকে কিছু নীচ প্রকৃতির হিংসুক লোকের অভিযোগে আটক করেন। গৃহস্বামী তাঁর স্ত্রী, পুত্র, কন্যাদের সাথে বাগদাদে কারারুদ্ধ হওয়ার পূর্বেই দেখা করতে চান। খলিফা তার প্রতি কঠোরতা অবলম্বন করে তার ইচ্ছা পূরণ করতে দেননি। গৃহস্বামীর প্রকৃত পরিচয় পেয়ে খলিফা তাঁর মৃত্যুদণ্ডাদেশ বাতিল করেন এবং তাকে সসম্মানে ডেমাস্কাসে ফিরে যাওয়ার ব্যবস্থা করেন। তাকে মহামূল্য পরিচ্ছদ, সুসজ্জিত দশ অশ্ব, দশ খচ্চর এবং দশটি উট উপহার দেন। এছাড়াও ডেমাস্কাসের রাজ প্রতিনিধির কাছে এক অনুরোধপত্র ও পাথেয়স্বরূপ বহুসংখ্যক অর্থ দিয়ে তাকে বিদায় দেন।"},
+  {id:"অনুধাবন ০৯",kind:"অনুধাবনমূলক (খ)",lid:"L11",b:"সম্ভাব্য প্রশ্ন",q:"“তিনি, আমার আকার প্রকার দর্শনে, তাহা বুঝিতে পারিলেন”- এখানে কী বুঝতে পারার কথা বলা হয়েছে?",a:"আলী ইবনে আব্বাসের নিকট কোনো অর্থ-সম্পদ ছিল না, এই বিষয়টি বুঝতে পারার কথা প্রশ্নোক্ত উক্তিটিতে বলা হয়েছে।\nআলী ইবনে আব্বাস ডেমাস্কাসে এক সম্ভ্রান্ত গৃহস্বামীর বাড়িতে একমাস আশ্রয়ে ছিলেন। বিভুঁইয়ে দীর্ঘকাল অতিবাহিত করায় তাঁর নিকট কোনো অর্থ-সম্পদ অবশিষ্ট ছিল না। বাগদাদে ফিরে যাওয়ার সময় লজ্জার কারণে তার অর্থের অভাবের কথা গৃহস্বামীকে বলতে পারেননি। তার আকার ইঙ্গিত দেখে গৃহস্বামী অর্থের অভাব বুঝতে পারেন এবং তার বাগদাদে ফিরে যাওয়ার জন্য এক থলি স্বর্ণমুদ্রা, খাদ্য সামগ্রী, ভৃত্য ও সুসজ্জিত উৎকৃষ্ট অশ্ব প্রদান করেন।"},
+  {id:"অনুধাবন ১০",kind:"অনুধাবনমূলক (খ)",lid:"L24",b:"সম্ভাব্য প্রশ্ন",q:"“কৃপা করিয়া তাহা শুনিলে, আমি চরিতার্থ হই”- ব্যাখ্যা করো।",a:"আলোচ্য উক্তিটি আলী ইবনে আব্বাস খলিফাকে উদ্দেশ্য করে বলেছিলেন, যেন তিনি দয়া করে তার পুরো কথাটি শোনেন।\nমিথ্যা অভিযোগের কারণে খলিফা মামুন ডেমাস্কাসের এক সম্ভ্রান্ত ব্যক্তিকে বন্দি করেন। ডেমাস্কাসের সেই সম্ভ্রান্ত ব্যক্তির ইতিবাচক চারিত্রিক বৈশিষ্ট্য এবং প্রাণ বাঁচানোর ঘটনাটি আলী ইবনে আব্বাস খলিফাকে জানাতে চান। কিন্তু ক্রোধান্বিত খলিফা কোনোভাবে শুনতে চাচ্ছিলেন না। তখন বিনীত অনুরোধ করে আলী ইবনে আব্বাস আলোচ্য উক্তিটি করেন যেন খলিফা তাঁকে কৃপা করেন, এতে তিনি তুষ্ট হবেন।"},
+  {id:"অনুধাবন ১১",kind:"অনুধাবনমূলক (খ)",lid:"L26",b:"সম্ভাব্য প্রশ্ন",q:"খলিফা মামুনকে মহামতি ও অতি উন্নতচিত্ত পুরুষ বলা হয়েছে কেন?— ব্যাখ্যা করো।",a:"খলিফা মামুন মহৎ এবং উদার হৃদয়ের শাসক ছিলেন বলে তাঁকে মহামতি ও উন্নতচিত্তের মানুষ বলা হয়েছে।\nমিথ্যা অভিযোগের কারণে খলিফা মামুন এক সম্ভ্রান্ত ব্যক্তিকে বন্দি করেন। কিন্তু তার প্রকৃত পরিচয় পাওয়ার সাথে সাথেই তিনি সেই বন্দিকে মুক্ত করেন এবং প্রচুর উপহার সামগ্রী এবং অর্থ প্রদান করে তাকে স্বদেশে পাঠিয়ে দেন। সত্যকে স্বীকার করতে তিনি কুণ্ঠাবোধ করেননি বরং নিজের ভুল স্বীকার করেছেন এবং সংশোধন করেছেন। তাই তাকে মহামতি ও উন্নতচিত্তের মানুষ বলা হয়েছে।"},
+  {id:"অনুধাবন ১২",kind:"অনুধাবনমূলক (খ)",lid:"L18",b:"সম্ভাব্য প্রশ্ন",q:"“আপনি এই মুহূর্ত হইতে স্বাধীন”- উক্তিটি কে, কাকে উদ্দেশ্য করে বলেছেন?- ব্যাখ্যা করো।",a:"আলোচ্য উক্তিটি আলী ইবনে আব্বাস সেই বন্দি ব্যক্তিকে উদ্দেশ্য করে বলেছেন।\nখলিফা কর্তৃক বন্দিকৃত ব্যক্তি এক সময় আলী ইবনে আব্বাসের প্রাণ বাঁচিয়েছিলেন। তার প্রতিদানস্বরূপ তিনি সেই বন্দি ব্যক্তির হাত পা থেকে লোহার বাঁধন খুলে দিয়ে তাকে স্বর্ণমুদ্রাসহ নিজের পরিবারের কাছে পাঠিয়ে দিতে চাইলেন। গৃহস্বামী ব্যক্তিটির যে প্রাণ যাওয়ার কোনো আশঙ্কা নেই সেটি বোঝাতেই আলী ইবনে আব্বাস আলোচ্য উক্তিটি করেন।"}
+];
+
+const CQS = [
+  {
+    id:"সৃজনশীল ০১",lid:"L26",b:"রা.বো.'২৬",
+    u:"“তার পর চেয়ে আসমান পানে বৃদ্ধ কহিল— বাপ।\nশত্রুরে তোর তলোয়ার তলে পেয়েও করিনু মাফ।\nএতদিন পরে তোর হত্যার লইলাম প্রতিশোধ,\nখুনের নেশায় আর করিব না, আখেরের পথরোধ।”",
+    gq:"(গ) উদ্দীপকের বিষয়টি 'প্রত্যুপকার' গল্পের কোন দিকটির সঙ্গে সাদৃশ্যপূর্ণ? ব্যাখ্যা করো।",
+    ga:"উদ্দীপকের বিষয়টি 'প্রত্যুপকার' গল্পের খলিফা মামুনের উন্নতচিত্ত, মহানুভবতা ও ক্ষমাশীলতার দিকটির সঙ্গে সাদৃশ্যপূর্ণ।\n'প্রত্যুপকার' গল্পে দেখা যায়, খলিফা মামুন দুষ্ট লোকদের কথায় প্ররোচিত হয়ে নির্দোষ এক ব্যক্তিকে প্রাণদণ্ড দিতে উদ্যত হয়েছিলেন। কিন্তু যখন আলী ইবনে আব্বাস তাঁকে সেই বন্দি ব্যক্তির অতীত দয়াশীলতা ও পরোপকারের কথা বিস্তারিত জানান, তখন খলিফা নিজের ক্রোধ সংবরণ করেন। তিনি কেবল বন্দিকে ক্ষমাই করেননি, বরং তাঁর মহৎ গুণের কদর করে তাঁকে সসম্মানে প্রচুর উপহার দিয়ে বিদায় জানান।\nউদ্দীপকের বৃদ্ধ লোকটিও ঠিক একইভাবে ক্রোধ সংবরণ করে এক অনন্য মহানুভবতার পরিচয় দিয়েছেন। তিনি তাঁর সন্তানের হত্যাকারীকে তরবারির নিচে পেয়েও হত্যা করেননি, বরং আখেরাতের কথা চিন্তা করে তাকে ক্ষমা করে দিয়েছেন। উদ্দীপকের বৃদ্ধের এই নিঃস্বার্থ ক্ষমাশীলতাই যেন 'প্রত্যুপকার' গল্পের খলিফা মামুনের উন্নতচিত্ত ও ক্ষমাশীল মনোভাবের এক নিখুঁত প্রতিচ্ছবি।",
+    hq:"(ঘ) “উদ্দীপকে 'প্রত্যুপকার' গল্পের একটি বিশেষ দিককে প্রতিফলিত করেছে”— মন্তব্যটি যথার্থতা নিরূপণ করো।",
+    ha:"“উদ্দীপকে 'প্রত্যুপকার' গল্পের একটি বিশেষ দিককে প্রতিফলিত করেছে”— মন্তব্যটি সম্পূর্ণ যথার্থ। এখানে মূলত গল্পের অন্যতম বিশেষ দিক ক্ষমাশীলতা ও মহানুভবতার বিষয়টি চমৎকারভাবে প্রতিফলিত হয়েছে।\n'প্রত্যুপকার' গল্পে কৃতজ্ঞতাবোধ, পরোপকার ও স্বার্থত্যাগের মতো একাধিক মহৎ দিক ফুটে উঠেছে। আলী ইবনে আব্বাস নিজের জীবনের ঝুঁকি নিয়ে উপকারীর প্রাণরক্ষার চেষ্টা করে এর উজ্জ্বল দৃষ্টান্ত রেখেছেন। তবে এসবের পাশাপাশি গল্পে খলিফা মামুনের ক্ষমাশীলতার দিকটিও অত্যন্ত তাৎপর্যপূর্ণ। খলিফা প্রথমে বন্দির ওপর ক্রুদ্ধ হয়ে প্রাণদণ্ড দিতে চাইলেও, পরে তাঁর অতীত দয়াশীলতার কথা জেনে মুহূর্তেই ক্রোধ সংবরণ করেন। একজন উন্নতচিত্ত পুরুষ হিসেবে প্রতিশোধ পরিহার করে তিনি বন্দিকে সসম্মানে ক্ষমা ও মুক্তি দেন।\nউদ্দীপকের কবিতায়ও আমরা উন্নত মানসিকতা ও ক্ষমার এই চূড়ান্ত রূপটি দেখতে পাই। বৃদ্ধ পিতা তাঁর সন্তানের খুনিকে হাতের নাগালে পেয়েও তাকে হত্যা করেননি। তিনি উপলব্ধি করেছেন, খুনের বদলা খুন দিয়ে নিলে তা পরকালের পথই রুদ্ধ করবে। তাই নিজের চরম ক্ষোভ ও প্রতিশোধ স্পৃহা সংবরণ করে তিনি অপরাধীকে ক্ষমা করে দিয়েছেন এবং এই ক্ষমার মাধ্যমেই শ্রেষ্ঠ প্রতিশোধ গ্রহণ করেছেন।\nপরিশেষে বলা যায়, 'প্রত্যুপকার' গল্পে কৃতজ্ঞতা ও পরোপকারের মতো বিভিন্ন দিক থাকলেও, খলিফা মামুনের ক্রোধ সংবরণ করে ক্ষমা প্রদর্শনের যে মহৎ দিকটি রয়েছে, উদ্দীপকের বৃদ্ধের আচরণে ঠিক সেই একই ক্ষমার আদর্শ প্রতিফলিত হয়েছে; তাই প্রশ্নোক্ত মন্তব্যটি সর্বাংশে যৌক্তিক।"
+  },
+  {
+    id:"সৃজনশীল ০২",lid:"L18",b:"ব.বো.'২৬",
+    u:"ডাক্তার শিমুল একবার গভীর রাতে ডাকাতের কবলে পড়েন। সে সময় দরিদ্র রিকশা চালক জীবনের ঝুঁকি নিয়ে ডাক্তার শিমুলের জীবন রক্ষা করেন। অনেক মাস পর ডাক্তার শিমুলের চেম্বারে এক গরিব রোগী আসলে তিনি চিনতে পারেন যে, ইনিই তার প্রাণরক্ষাকারী সেই রিকশাচালক। সাথে সাথে তিনি নিজের পরিচয় দিয়ে নিজ খরচে সেই রিকশা চালকের চিকিৎসার যাবতীয় আয়োজন সম্পন্ন করেন।",
+    gq:"(গ) উদ্দীপকের ডাক্তার শিমুলের সাথে 'প্রত্যুপকার' গল্পের আলী ইবনে আব্বাস চরিত্রের সাদৃশ্য ব্যাখ্যা করো।",
+    ga:"উদ্দীপকের ডাক্তার শিমুলের সাথে 'প্রত্যুপকার' গল্পের আলী ইবনে আব্বাস চরিত্রের কৃতজ্ঞতাবোধ ও প্রত্যুপকার করার মানসিকতার দিক থেকে গভীর সাদৃশ্য রয়েছে।\n'প্রত্যুপকার' গল্পে দেখা যায়, আলী ইবনে আব্বাস একসময় দামেস্কের এক সম্ভ্রান্ত ব্যক্তির কাছে আশ্রয় ও সাহায্য পেয়ে নিজের প্রাণরক্ষা করেছিলেন। পরবর্তীকালে সেই উপকারী ব্যক্তিটিই দুর্ভাগ্যক্রমে খলিফার বন্দি হিসেবে তাঁর কাছে নীত হলে, আলী ইবনে আব্বাস তাঁকে চিনতে পারেন এবং নিজের জীবনের ঝুঁকি নিয়ে খলিফার কাছে সুপারিশ করে সেই ব্যক্তির প্রাণ বাঁচান। এভাবেই তিনি তাঁর উপকারীর প্রতি কৃতজ্ঞতা বা প্রত্যুপকার জ্ঞাপন করেন।\nউদ্দীপকেও দেখা যায়, ডাকাতের হাত থেকে প্রাণ বাঁচানো দরিদ্র রিকশাচালককে অনেক দিন পর নিজের চেম্বারে গরিব রোগী হিসেবে পেয়ে ডাক্তার শিমুল তাকে চিনতে পারেন এবং নিজের খরচে তার চিকিৎসার যাবতীয় ব্যবস্থা করেন। ডাক্তার শিমুলের এই উপকারীকে মনে রাখা এবং তার প্রতিদান দেওয়ার নিঃস্বার্থ মানসিকতা মূলত গল্পের আলী ইবনে আব্বাসের কৃতজ্ঞতাপূর্ণ আচরণেরই এক সুন্দর প্রতিচ্ছবি।",
+    hq:"(ঘ) “ভাবগত মিল থাকলেও উদ্দীপক ও 'প্রত্যুপকার' গল্পের প্রেক্ষাপট সম্পূর্ণ ভিন্ন”— মন্তব্যটির পক্ষে তোমার মতামত বিশ্লেষণ করো।",
+    ha:"“ভাবগত মিল থাকলেও উদ্দীপক ও 'প্রত্যুপকার' গল্পের প্রেক্ষাপট সম্পূর্ণ ভিন্ন”— মন্তব্যটি অত্যন্ত যৌক্তিক ও সর্বাংশে যথাযথ।\n'প্রত্যুপকার' গল্পে মূলত রাজনৈতিক ও রাষ্ট্রীয় প্রেক্ষাপটের চিত্র দেখা যায়। খলিফা মামুন, দামেস্কের শাসনকর্তা বদল, যুদ্ধ-বিগ্রহ, প্রাণভয়ে পলায়ন এবং পরবর্তীকালে খলিফার নির্দেশে বন্দিকে মৃত্যুদণ্ড দেওয়ার মতো রাজকীয় ও প্রশাসনিক পরিবেশের মধ্য দিয়ে গল্পটি আবর্তিত হয়েছে। এখানে আলী ইবনে আব্বাস তাঁর উপকারীর জীবন বাঁচাতে গিয়ে খলিফার রোষানলে পড়ার মতো চরম রাষ্ট্রীয় এবং ব্যক্তিগত ঝুঁকির সম্মুখীন হয়েছিলেন।\nঅন্যদিকে, উদ্দীপকের প্রেক্ষাপটটি একেবারেই সাধারণ একটি সমাজজীবনের ঘটনা চিত্র। এখানে গভীর রাতে ডাকাতের কবলে পড়া, একজন সাধারণ রিকশাচালকের সাহায্যে প্রাণরক্ষা এবং পরবর্তীকালে চিকিৎসকের চেম্বারে চিকিৎসা নেওয়ার মতো সাধারণ আর্থসামাজিক ঘটনাবলি তুলে ধরা হয়েছে। উদ্দীপকের রিকশাচালককে সাহায্য করতে গিয়ে ডাক্তার শিমুলকে গল্পের আলী ইবনে আব্বাসের মতো কোনো রাষ্ট্রীয় বা জীবনের ঝুঁকির মুখে পড়তে হয়নি।\nপরিশেষে বলা যায়, উভয়স্থানেই 'উপকারীর উপকার করা' বা কৃতজ্ঞতার মূলসুরটি অভিন্ন হলেও গল্পের রাজকীয়-রাষ্ট্রীয় পরিবেশ এবং উদ্দীপকের সাধারণ সামাজিক পরিবেশ সম্পূর্ণ ভিন্ন হওয়ার কারণেই প্রশ্নোক্ত মন্তব্যটি সার্থক হয়েছে।"
+  },
+  {
+    id:"সৃজনশীল ০৩",lid:"L8",b:"কু.বো.'২৬",
+    u:"একদিন মাহমুদ সাহেব বিশ্বরোডে ভয়াবহ দুর্ঘটনায় আহত আবু জাফর নামের এক ব্যক্তিকে দ্রুত হাসপাতালে নিয়ে তার চিকিৎসার ব্যবস্থা করেন এবং তার পরিবারকে খবর দেন। কয়েক বছর পর মাহমুদ সাহেবের ব্যবসা প্রতিষ্ঠানে অগ্নিকাণ্ডের ঘটনায় তিনি নিঃস্ব হয়ে যান এবং ভেঙে পড়েন। দুর্ঘটনার সংবাদ শুনে আবু জাফর তাঁর খোঁজখবর নেয় এবং আর্থিক সহযোগিতা করে তাঁর পাশে দাঁড়ায়। মাহমুদ সাহেব আবার নতুন করে ব্যবসা শুরু করেন।",
+    gq:"(গ) উদ্দীপকে মাহমুদ সাহেব 'প্রত্যুপকার' গল্পের কোন চরিত্রের প্রতিনিধিত্ব করে? ব্যাখ্যা করো।",
+    ga:"উদ্দীপকের মাহমুদ সাহেব 'প্রত্যুপকার' গল্পের ডেমাস্কাসের সেই দয়াময় 'আশ্রয়দাতা' বা সম্ভ্রান্ত গৃহস্বামী চরিত্রের প্রতিনিধিত্ব করেন।\n'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাস যখন শত্রুর ভয়ে পালিয়ে ডেমাস্কাসের এক সম্ভ্রান্ত ব্যক্তির বাড়িতে আশ্রয় প্রার্থনা করেন, তখন সেই গৃহস্বামী তাঁকে অভয় প্রদান করেন। শুধু তা-ই নয়, তিনি এক মাসকাল তাঁকে নিরাপদে নিজের বাড়িতে রাখেন এবং বিদায়বেলায় কোনো প্রতিদানের আশা না করে বরং নিজ খরচে তাঁকে উন্নত মানের ঘোড়া, খাদ্যসামগ্রী, অর্থ এবং পথপ্রদর্শক ভৃত্য দিয়ে সাহায্য করেন। সম্পূর্ণ নিঃস্বার্থভাবে একজন বিপন্ন মানুষের পাশে দাঁড়িয়ে তিনি এক মহানুভবতার পরিচয় দিয়েছিলেন।\nউদ্দীপকেও ঠিক একই মানবিকতার চিত্র ফুটে উঠেছে, যেখানে মাহমুদ সাহেব বিশ্বরোডে দুর্ঘটনায় আহত আবু জাফরকে দ্রুত হাসপাতালে নিয়ে যান এবং তার চিকিৎসার ব্যবস্থা করেন। ডেমাস্কাসের আশ্রয়দাতার মতোই মাহমুদ সাহেবও চরম বিপদের মুহূর্তে একজন অসহায় মানুষের সাহায্যে নিঃস্বার্থভাবে এগিয়ে এসেছেন। ডেমাস্কাসের সেই পরোপকারী ব্যক্তির মহৎ গুণের সুস্পষ্ট প্রতিফলন মাহমুদ সাহেবের আচরণের মধ্যে থাকায় বলা যায়, তিনি ওই আশ্রয়দাতা চরিত্রটিরই যোগ্য প্রতিনিধি।",
+    hq:"(ঘ) উদ্দীপকের আবু জাফরের কর্মকাণ্ডে 'প্রত্যুপকার' গল্পের মর্মবাণী প্রতিফলিত হয়েছে কি? তোমার উত্তরের পক্ষে মতামত দাও।",
+    ha:"হ্যাঁ, উদ্দীপকের আবু জাফরের কর্মকাণ্ডে 'প্রত্যুপকার' গল্পের মূল মর্মবাণী অর্থাৎ, উপকারীর উপকার করা বা প্রত্যুপকারের বিষয়টি সম্পূর্ণভাবে প্রতিফলিত হয়েছে।\n'প্রত্যুপকার' গল্পের মূল উপজীব্য হলো, একজন সকৃতজ্ঞ ব্যক্তির দ্বারা তাঁর নিঃস্বার্থ উপকারীর প্রতি উপকার করার কাহিনি। গল্পে দেখা যায়, আলী ইবনে আব্বাস একসময় ডেমাস্কাসের যে ব্যক্তির কাছে আশ্রয় ও সাহায্য পেয়েছিলেন, দুর্ভাগ্যক্রমে সেই ব্যক্তিটিই একদিন খলিফা মামুনের সৈন্যদল কর্তৃক বন্দি হন এবং খলিফার নির্দেশে আলী ইবনে আব্বাসের গৃহে তাকে অন্তরীণ করে রাখার ব্যবস্থা করা হয়। বন্দির পরিচয় পাওয়ার পর আলী ইবনে আব্বাস নিজের জীবনের চরম ঝুঁকি নিতেও দ্বিধা করেননি। তিনি উপকারীর প্রাণরক্ষার জন্য খলিফার কাছে নির্ভয়ে সুপারিশ করেন এবং শেষ পর্যন্ত তাঁকে বিপদমুক্ত করে উপকারীর প্রতি উপকার করেন।\nউদ্দীপকের আবু জাফরও অনুরূপ কৃতজ্ঞতার পরিচয় দিয়েছে। মাহমুদ সাহেব এক ভয়াবহ দুর্ঘটনায় তার জীবন বাঁচিয়েছিলেন। পরবর্তীকালে মাহমুদ সাহেব অগ্নিকাণ্ডে নিঃস্ব হয়ে পড়লে আবু জাফর অতীতের সেই উপকারের কথা ভুলে যাননি। তিনি নিজ উদ্যোগে মাহমুদ সাহেবের খোঁজ নেন এবং তাঁকে আর্থিক সহায়তা করে পুনরায় ব্যবসায় প্রতিষ্ঠিত হতে সাহায্য করেন।\nপরিশেষে বলা যায়, 'প্রত্যুপকার' গল্পের আলী ইবনে আব্বাস যেমন নিজের উপকারীর চরম বিপদে তাঁর পাশে দাঁড়িয়ে কৃতজ্ঞতার শ্রেষ্ঠ দৃষ্টান্ত স্থাপন করেছেন, উদ্দীপকের আবু জাফরও ঠিক একইভাবে মাহমুদ সাহেবের দুঃসময়ে পাশে দাঁড়িয়েছে, যা গল্পের মূল মর্মবাণী প্রত্যুপকার-এর মহান আদর্শকেই শতভাগ সার্থক ও প্রতিফলিত করেছে।"
+  },
+  {
+    id:"সৃজনশীল ০৪",lid:"L3",b:"মূল বই; নাটোর সরকারি বালক উচ্চ বিদ্যালয়",
+    u:"চুরির অভিযোগে কিছু লোক জনৈক ব্যক্তিকে চেয়ারম্যানের ইউনিয়ন পরিষদে হাজির করল। ঘটনার বিবরণ শুনে তিনি চৌকিদার আমজাদকে ডেকে নির্দেশ দিলেন বন্দিকে তার বাড়িতে রাখতে। ঘটনাক্রমে আমজাদ জানতে পারলেন, বন্দি ব্যক্তি আর কেউ নয়, সে দশ বছর আগে আমজাদের সন্তানকে সড়ক দুর্ঘটনা থেকে বাঁচিয়েছিল, নিজ গৃহে নিয়ে গিয়ে আহত সন্তানের সেবা করেছিল। কিন্তু আমজাদ নিজের ক্ষতি হবে ভেবে না চেনার ভান করে চুপ করে রইল।",
+    gq:"(গ) উদ্দীপকের বন্দির ঘটনা 'প্রত্যুপকার' গল্পের কোন ঘটনার কথা স্মরণ করিয়ে দেয়?— ব্যাখ্যা করো।",
+    ga:"উদ্দীপকের বন্দির ঘটনা 'প্রত্যুপকার' গল্পের গৃহস্বামীর বন্দি হওয়ার ঘটনাকে স্মরণ করিয়ে দেয়।\n'প্রত্যুপকার' গল্পে গৃহস্বামীকে মিথ্যা অভিযোগে আটক করে খলিফা মামুনের কাছে নিয়ে আসা হয়। খলিফা তাঁকে আলী ইবনে আব্বাসের বাড়িতে আটক করে রাখতে নির্দেশ দেন। আলী ইবনে আব্বাস ঘটনাক্রমে জানতে পারেন গৃহস্বামী একসময় তাঁকে আশ্রয় দিয়েছিলেন এবং তাঁর জীবন বাঁচিয়েছিলেন। এমনকি যাওয়ার সময় তিনি ঘোড়ার পিঠে যথেষ্ট খাদ্যসামগ্রী দিয়ে সাথে একটি ভৃত্য দিয়ে দেন; সাথে দেন এক থলে স্বর্ণমুদ্রা। অনেক বছর পর যখন গৃহস্বামী মিথ্যা অভিযোগে বন্দি হয়ে আসে তখন আলী ইবনে আব্বাসের এ বর্ণনা শুনে গৃহস্বামী নিজের পরিচয় প্রকাশ করেন এবং তাঁকে আলী ইবনে আব্বাস চিনতে পারেন।\nউদ্দীপকে বলা হয়েছে চুরির অভিযোগে কিছু লোক জনৈক ব্যক্তিকে চেয়ারম্যানের নিকট ইউনিয়ন পরিষদে হাজির করে। ঘটনার বিবরণ শুনে তিনি চৌকিদার আমজাদকে নির্দেশ দেন যেন বন্দিকে তার বাড়িতে রাখা হয়। ঘটনাক্রমে চৌকিদার জানতে পারে সে বন্দি লোকটি দশ বছর আগে আমজাদের সন্তানকে সড়ক দুর্ঘটনা থেকে বাঁচিয়েছিল। অতএব, বলা যায় উদ্দীপকের ঘটনাটি 'প্রত্যুপকার' গল্পের গৃহস্বামীর বন্দি হওয়ার ঘটনাকে মনে করিয়ে দেয়।",
+    hq:"(ঘ) “আমজাদ ও আলী ইবনে আব্বাস উভয়ই বন্দি কর্তৃক উপকৃত হলেও এরা একে অপরের প্রতিনিধি হয়ে উঠতে পারেনি।”— বিশ্লেষণ করো।",
+    ha:"“আমজাদ ও আলী ইবনে আব্বাস উভয়ই বন্দি কর্তৃক উপকৃত হলেও এরা একে অপরের প্রতিনিধি হয়ে উঠতে পারেনি।”— উক্তিটি যথার্থ।\nআলী ইবনে আব্বাস একসময় তাঁর প্রাণ রক্ষার্থে এক ব্যক্তির বাড়িতে আশ্রয় নিয়েছিলেন। গৃহস্বামী তাঁকে আশ্রয় দিয়ে আপ্যায়ন করেন। তাঁকে নিজ দেশে ফেরত আসার জন্য সবরকম সহায়তা করেন। দীর্ঘকাল পর সেই গৃহস্বামী যখন খলিফা মামুনের বন্দি হিসেবে তাঁর কাছে উপস্থিত হন, তখন তিনি তাঁকে চিনতে পারেন। গৃহস্বামীকে দেখে আলী ইবনে আব্বাস অত্যন্ত খুশি হন। তাঁর বাঁধন খুলে দেন এবং তাঁকে বলেন আপনি এখন থেকে মুক্ত। সাথে তাঁকে এক থলে স্বর্ণমুদ্রা দিয়ে জানান যে, তিনি তখনই পরিবারের কাছে ফেরত যেতে পারেন। এমনকি তিনি গৃহস্বামীর জীবন রক্ষার্থে নিজের প্রাণদণ্ডেরও ভয় করেন না। কিন্তু গৃহস্বামী তাঁর এ কথায় রাজি হননি। কিছুদিন আগে যার প্রাণ রক্ষা করেছেন এখন সেই প্রাণ বিনাশের কারণ হতে তিনি অস্বীকৃতি জানান। তিনি অন্য উপায়ে তাঁর মুক্তির চেষ্টা করতে বলেন। ফলে আলী ইবনে আব্বাস পরদিন সকালে খলিফার নিকটে গিয়ে সবকিছু খুলে বলেন। খলিফা সবকিছু বুঝতে পেরে গৃহস্বামীকে মুক্তি দেন এবং খলিফা তাকে মহামূল্য পরিচ্ছদ, সুসজ্জিত দশ অশ্ব, দশ খচ্চর, দশ উষ্ট্র উপহার প্রদান করেন।\nউদ্দীপকে জনৈক ব্যক্তি চৌকিদারের সন্তানকে সড়ক দুর্ঘটনা থেকে বাঁচালেও চৌকিদার তাকে না চেনার ভান করে। অথচ ঐ ব্যক্তি চৌকিদারের ছেলেকে নিজ গৃহে নিয়ে সেবা করে সুস্থ করেছিল। কিন্তু আমজাদ নিজের ক্ষতি হবে ভেবে তাঁকে না চেনার ভান করে চুপ করে থাকে।\nউদ্দীপকের আমজাদ অকৃতজ্ঞতা দেখালেও গল্পের আলী ইবনে আব্বাস কৃতজ্ঞতা স্বরূপ খলিফার নিকট থেকে গৃহস্বামীকে বাঁচিয়েছিলেন। অতএব, বলা যায় আমজাদ ও আলী ইবনে আব্বাস উভয়ই বন্দি কর্তৃক উপকৃত হলেও এরা একে অপরের প্রতিনিধি হয়ে উঠতে পারেনি।"
+  },
+  {
+    id:"সৃজনশীল ০৫",lid:"L18",b:"বি এ এফ শাহীন কলেজ",
+    u:"বাবা আমাদের চোখের সামনে পরপর দুটি গুলি করে কুকুরটিকে মারলেন। আমি স্পষ্ট দেখতে পেলাম বাবা দুঃখে-বেদনায় কুঁকড়ে উঠেছেন। তবু শান্ত গলায় বললেন, সে আমার ছেলের জীবন রক্ষা করেছে তাকে আমি গুলি করে মারলাম।",
+    gq:"(গ) উদ্দীপকের সঙ্গে 'প্রত্যুপকার' গল্পের বৈসাদৃশ্য কোথায়? ব্যাখ্যা করো।",
+    ga:"উপকারীর প্রতি আচরণের দিক থেকে উদ্দীপক ও 'প্রত্যুপকার' গল্পের মধ্যে বৈসাদৃশ্য বিদ্যমান।\n'প্রত্যুপকার' গল্পে কৃতজ্ঞতা প্রকাশের এক মহৎ দৃষ্টান্ত স্থাপিত হয়েছে। গল্পের প্রধান চরিত্র আলী ইবনে আব্বাস তাঁর গৃহে খলিফার নির্দেশে বন্দি ব্যক্তিকে দেখে চিনতে পারেন, এই ব্যক্তিই একসময় দামেস্কে তাঁর প্রাণ রক্ষা করেছিলেন। তৎক্ষণাৎ তিনি উপকারীর উপকারের জন্য নিজের জীবনের ঝুঁকি নিতেও প্রস্তুত হন এবং বন্দিকে পালিয়ে যাওয়ার প্রস্তাব দেন। বন্দি রাজি না হলে তিনি খলিফার কাছে তাঁর আশ্রয়দাতার মহত্ত্বের কথা তুলে ধরে তাঁর মুক্তির জন্য আবেদন জানান। এখানে উপকারীর প্রতিদান হিসেবে কেবল জীবন রক্ষাই করা হয়নি, বরং খলিফার মাধ্যমে তাঁকে সম্মানিতও করা হয়েছে।\nঅন্যদিকে, উদ্দীপকের ঘটনায় উপকারীর প্রতিদান দেওয়া হয়েছে করুণ মৃত্যুর মাধ্যমে। উদ্দীপকে বাবা তাঁর ছেলের জীবনরক্ষাকারী কুকুরটির প্রতি গভীরভাবে কৃতজ্ঞ। কিন্তু তিনি সেই কৃতজ্ঞতার প্রতিদান দিতে ব্যর্থ হন। কুকুরটিকে গুলি করার সময় তাঁর দুঃখে বেদনায় কুঁকড়ে ওঠা থেকে বোঝা যায় কাজটি তাঁর জন্য কতটা মর্মান্তিক ছিল। তবু তিনি শান্ত গলায় নিজের কাজের কথা স্বীকার করেছেন, যা তাঁর নিরুপায় অবস্থাকেই প্রকাশ করে। এখানে উপকারী প্রাণীটির ভাগ্যে জুটেছে নিষ্ঠুর পরিণতি, যা 'প্রত্যুপকার' গল্পের মহৎ দৃষ্টান্তের সম্পূর্ণ বিপরীত।",
+    hq:"(ঘ) “উপকারের দিক থেকে এক হলেও প্রতিদানের দিক থেকে উদ্দীপক এবং 'প্রত্যুপকার' গল্পটি আলাদা”— মন্তব্যটি বিশ্লেষণ করো।",
+    ha:"প্রশ্নোক্ত মন্তব্যটি যথার্থ, কারণ উভয় কাহিনিতে উপকার লাভের ঘটনা থাকলেও প্রতিদানের স্বরূপ সম্পূর্ণ ভিন্ন।\n'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাস একদা দামেস্কের এক সম্ভ্রান্ত ব্যক্তির দ্বারা উপকৃত হয়ে নিজের প্রাণ রক্ষা করেছিলেন। পরবর্তীকালে সেই উপকারী ব্যক্তি খলিফার আদেশে বন্দি হলে আলী ইবনে আব্বাস প্রতিদানের সুযোগ লাভ করেন। তিনি নিজের বিপদকে তুচ্ছ করে, খলিফার ক্রোধের ভয়কে উপেক্ষা করে উপকারী বন্ধুর জীবন বাঁচাতে এগিয়ে আসেন। তাঁর এই মহৎ কৃতজ্ঞতাবোধে খলিফাও মুগ্ধ হন এবং বন্দিকে মুক্ত করে দেন। এখানে উপকারের প্রতিদান উপকারের মাধ্যমেই দেওয়া হয়েছে, যা গল্পের মূল উপজীব্য।\nউদ্দীপকের বাবা তার ছেলের জীবনরক্ষাকারী কুকুরের মাধ্যমে উপকৃত হয়েছেন। কিন্তু প্রতিদানের ক্ষেত্রে তিনি সম্পূর্ণ বিপরীত কাজ করেন। তিনি উপকারী কুকুরটিকে গুলি করে হত্যা করেন। যদিও এই কাজটি করার সময় তিনি চরম মানসিক যন্ত্রণা ভোগ করেন, তবুও তার কাজের মাধ্যমে 'প্রত্যুপকার' গল্পের উপকারীর উপকার করার যে দিক প্রতিফলিত হয় তার সম্পূর্ণ বিপরীত। 'প্রত্যুপকার' যেখানে আলী ইবনে আব্বাস তার আশ্রয়দাতা বন্দির জীবন রক্ষা করেন, সেখানে উদ্দীপকের বাবা তার ছেলের জীবন রক্ষাকারী কুকুরটিকে গুলি করে মারেন। সুতরাং, উপকারের দিক থেকে উদ্দীপকের কুকুর ও গল্পের বন্দি লোকটি এক হলেও প্রতিদান দেওয়ার দিক থেকে উদ্দীপক ও প্রত্যুপকার গল্পটি সম্পূর্ণ আলাদা।"
+  },
+  {
+    id:"সৃজনশীল ০৬",lid:"L_note_5b",b:"ভিকারুননিসা নূন স্কুল এন্ড কলেজ, ঢাকা",
+    u:"সৌজন্যতা প্রকাশের সবচেয়ে উৎকৃষ্ট রূপ হলো কৃতজ্ঞতাবোধ। প্রাচীন রোমের রাজনীতিবিদ ও দার্শনিকের মতে, কৃতজ্ঞতাবোধ কেবল একটি শ্রেষ্ঠ গুণই নয়, অন্য সব গুণেরও জনক। কৃতজ্ঞতা প্রকাশের মাধ্যমে অনেক শীতল সম্পর্ক যেমন উষ্ণ হয়, তেমনি সদ্য পরিচিত মানুষের সঙ্গেও অতি অল্প সময়ে গড়ে ওঠে বন্ধুত্ব।",
+    gq:"(গ) উদ্দীপকে উল্লিখিত গুণটি 'প্রত্যুপকার' গল্পের আলী ইবনে আব্বাসের মধ্যে কতটুকু প্রতিফলিত হয়েছে তা বর্ণনা করো।",
+    ga:"উদ্দীপকে উল্লিখিত কৃতজ্ঞতাবোধের গুণটি 'প্রত্যুপকার' গল্পের আলী ইবনে আব্বাসের চরিত্রে পরিপূর্ণভাবে প্রতিফলিত হয়েছে।\n'প্রত্যুপকার' গল্পে আলী ইবনে আব্বাসকে একজন কৃতজ্ঞ ও মহৎ হৃদয়ের অধিকারী হিসেবে দেখানো হয়েছে। খলিফা মামুনের আদেশে এক মৃত্যুদণ্ডাদেশপ্রাপ্ত বন্দিকে নিজ গৃহে পাহারা দেওয়ার দায়িত্ব পান। পরে তিনি জানতে পারেন, ওই বন্দি ব্যক্তিটিই বহু বছর আগে দামেস্কে তাঁর প্রাণ রক্ষা করেছিলেন। এই সত্য জানার সঙ্গে সঙ্গে তিনি তাঁর উপকারীর প্রতি কৃতজ্ঞতায় আপ্লুত হন এবং যেকোনো মূল্যে তাঁর প্রাণ রক্ষা করার জন্য সংকল্পবদ্ধ হন।\nউদ্দীপকে বলা হয়েছে, কৃতজ্ঞতাবোধ হলো সৌজন্যতা প্রকাশের উৎকৃষ্ট রূপ এবং সকল গুণের জনক। এই গুণ প্রকাশের মাধ্যমে শীতল সম্পর্ক যেমন উষ্ণ হয়, তেমনি মানুষের সঙ্গে বন্ধুত্ব গড়ে ওঠে। আলী ইবনে আব্বাসের কার্যকলাপ উদ্দীপকে বর্ণিত এই গুণেরই সার্থক প্রতিচ্ছবি। তিনি জীবনের ঝুঁকি নিয়ে ও খলিফার ক্রোধের পরোয়া না করে উপকারীর প্রাণ রক্ষা করে কৃতজ্ঞতার চূড়ান্ত নিদর্শন স্থাপন করেছেন।",
+    hq:"(ঘ) উদ্দীপকে 'প্রত্যুপকার' গল্পের পূর্ণ প্রতিফলন ঘটেনি— মন্তব্যটির যৌক্তিকতা নিরূপণ করো।",
+    ha:"“উদ্দীপকে আলোচিত কৃতজ্ঞতাবোধ 'প্রত্যুপকার' গল্পের একটি প্রধান দিক হলেও তা গল্পের সামগ্রিক ভাবকে ধারণ করে না”— মন্তব্যটি সম্পূর্ণ যৌক্তিক।\n'প্রত্যুপকার' গল্পে কেবল কৃতজ্ঞতা প্রকাশই একমাত্র বিষয় নয়। গল্পটিতে তিনটি প্রধান চরিত্রের মাধ্যমে তিনটি মহৎ গুণের প্রকাশ ঘটেছে। আলী ইবনে আব্বাসের মাধ্যমে উপকারীর প্রতি কৃতজ্ঞতা, বন্দি ব্যক্তির মাধ্যমে নিঃস্বার্থ পরোপকার ও আত্মত্যাগ এবং খলিফা মামুনের মাধ্যমে ন্যায়পরায়ণতা ও মহত্ত্বের পরিচয় দেওয়া হয়েছে। গল্পের কাহিনি এই তিনটি গুণের সমন্বয়েই পূর্ণতা পেয়েছে।\nউদ্দীপকে কৃতজ্ঞতাবোধকে একটি শ্রেষ্ঠ গুণ হিসেবে চিহ্নিত করা হয়েছে, যা সকল গুণের জনক এবং এটি মানুষের মধ্যকার সম্পর্ককে উন্নত করে।\nউদ্দীপকে বর্ণিত এই কৃতজ্ঞতাবোধের দিকটি গল্পের আলী ইবনে আব্বাসের চরিত্রে থাকলেও, গল্পের মূলভাব আরও ব্যাপক। গল্পটিতে উপকারীর নিঃস্বার্থপরতা ও শাসকের ন্যায়বিচারের মতো আরও দুটি মহৎ গুণের সমাবেশ ঘটেছে, যা উদ্দীপকে অনুপস্থিত। যেহেতু উদ্দীপকটি গল্পের এই বহুমাত্রিক দিকগুলো তুলে ধরতে পারেনি, তাই বলা যায় এটি গল্পের পূর্ণাঙ্গ ভাবকে প্রকাশ করে না, বরং একটি খণ্ডাংশ মাত্র।"
+  }
+];
+
+let selectedLine = null, selectedType = 'all', showAnswers = false, showInlineTags = true, fontScale = 1;
+const chosenMcq = {};
+
+function initBook() {
+  renderPortalCards();
+
+  const stats = {};
+  MCQS.forEach(q => { stats[q.lid] = stats[q.lid] || {m:0,s:0,c:0}; stats[q.lid].m++; });
+  SQS.forEach(q =>  { stats[q.lid] = stats[q.lid] || {m:0,s:0,c:0}; stats[q.lid].s++; });
+  CQS.forEach(q =>  { stats[q.lid] = stats[q.lid] || {m:0,s:0,c:0}; stats[q.lid].c++; });
+
+  document.querySelectorAll('.q-phrase').forEach(el => {
+    const lid = el.dataset.lid;
+    const st = stats[lid];
+    if (!st) return;
+
+    if (st.m > 0) el.classList.add('has-mcq');
+    if (st.s > 0) el.classList.add('has-sq');
+    if (st.c > 0) el.classList.add('has-cq');
+
+    const tagWrap = document.createElement('span');
+    tagWrap.className = 'phrase-tag';
+    if (st.m > 0) tagWrap.innerHTML += `<span class="ptag ptag-m">বহুনির্বাচনি (${st.m})</span>`;
+    if (st.s > 0) tagWrap.innerHTML += `<span class="ptag ptag-s">জ্ঞান ও অনুধাবন (${st.s})</span>`;
+    if (st.c > 0) tagWrap.innerHTML += `<span class="ptag ptag-c">সৃজনশীল (${st.c})</span>`;
+    el.appendChild(tagWrap);
+
+    el.addEventListener('click', () => handlePhraseClick(lid, el));
+  });
+
+  const boardSet = new Set();
+  [...MCQS, ...SQS, ...CQS].forEach(item => {
+    item.b.split(';').forEach(part => boardSet.add(part.trim()));
+  });
+  const bSel = document.getElementById('boardSelect');
+  Array.from(boardSet).sort().forEach(b => {
+    const op = document.createElement('option');
+    op.value = b;
+    op.textContent = expandBoard(b);
+    bSel.appendChild(op);
+  });
+
+  renderQuestions();
+  buildPrintBank();
+}
+
+function handlePhraseClick(lid, el) {
+  document.querySelectorAll('.q-phrase.is-selected').forEach(x => x.classList.remove('is-selected'));
+  el.classList.add('is-selected');
+  selectedLine = lid;
+
+  const clone = el.cloneNode(true);
+  clone.querySelectorAll('.phrase-tag').forEach(t => t.remove());
+  document.getElementById('baQuote').textContent = `“${clone.textContent.trim()}”`;
+
+  const boardBreakdown = {};
+  const addCount = (bStr, cat) => {
+    bStr.split(';').forEach(raw => {
+      const bName = expandBoard(raw.trim());
+      boardBreakdown[bName] = boardBreakdown[bName] || {বহুনির্বাচনি:0, সংক্ষিপ্ত:0, সৃজনশীল:0};
+      boardBreakdown[bName][cat]++;
+    });
+  };
+  MCQS.filter(x => x.lid === lid).forEach(x => addCount(x.b, 'বহুনির্বাচনি'));
+  SQS.filter(x => x.lid === lid).forEach(x => addCount(x.b, 'সংক্ষিপ্ত'));
+  CQS.filter(x => x.lid === lid).forEach(x => addCount(x.b, 'সৃজনশীল'));
+
+  document.getElementById('baBoardList').innerHTML = Object.entries(boardBreakdown).map(([bName, counts]) => {
+    const parts = [];
+    if (counts['বহুনির্বাচনি']) parts.push(`<span style="color:#dc2626;font-weight:700;">বহুনির্বাচনি ${counts['বহুনির্বাচনি']}টি</span>`);
+    if (counts['সংক্ষিপ্ত']) parts.push(`<span style="color:#059669;font-weight:700;">জ্ঞান/অনুধাবন ${counts['সংক্ষিপ্ত']}টি</span>`);
+    if (counts['সৃজনশীল']) parts.push(`<span style="color:#b45309;font-weight:700;">সৃজনশীল ${counts['সৃজনশীল']}টি</span>`);
+    return `<div class="ba-board-item"><strong>${bName}:</strong> ${parts.join(', ')}</div>`;
+  }).join('');
+
+  document.getElementById('boardAnalyticsBox').style.display = 'block';
+  renderQuestions();
+  document.getElementById('rightBox').scrollTop = 0;
+  toggleDrawer(true);
+}
+
+function clearSelection() {
+  selectedLine = null;
+  document.querySelectorAll('.q-phrase.is-selected').forEach(x => x.classList.remove('is-selected'));
+  document.getElementById('boardAnalyticsBox').style.display = 'none';
+  renderQuestions();
+}
+
+function setType(type, btn) {
+  selectedType = type;
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQuestions();
+}
+
+function toggleDrawer(open) {
+  const box = document.getElementById('rightBox');
+  const bd = document.getElementById('drawerBackdrop');
+  if (open) {
+    box.classList.add('drawer-open');
+    if (window.innerWidth <= 960) bd.classList.add('open');
+  } else {
+    box.classList.remove('drawer-open');
+    bd.classList.remove('open');
+  }
+}
+
+function toggleInlineTags() {
+  showInlineTags = !showInlineTags;
+  document.querySelectorAll('.phrase-tag').forEach(t => {
+    t.style.display = showInlineTags ? 'inline-flex' : 'none';
+  });
+}
+
+function toggleAllAnswers() { showAnswers = !showAnswers; renderQuestions(); }
+function changeFont(delta) {
+  fontScale = Math.min(1.3, Math.max(0.85, fontScale + delta));
+  document.documentElement.style.setProperty('--font-scale', fontScale.toFixed(2));
+}
+function jumpLine(lid) {
+  const target = document.querySelector(`.q-phrase[data-lid="${lid}"]`);
+  if (!target) return;
+  if (window.innerWidth <= 960) toggleDrawer(false);
+  target.scrollIntoView({behavior:'smooth', block:'center'});
+  document.querySelectorAll('.q-phrase.is-selected').forEach(x => x.classList.remove('is-selected'));
+  target.classList.add('is-selected');
+}
+function pickOpt(qid, idx) { chosenMcq[qid] = idx; renderQuestions(); }
+
+function renderQuestions() {
+  const bVal = document.getElementById('boardSelect').value;
+  const sVal = document.getElementById('qSearch').value.trim().toLowerCase();
+  const box = document.getElementById('qContainer');
+
+  const pool = [];
+  if (selectedType === 'all' || selectedType === 'mcq') MCQS.forEach(d => pool.push({t:'mcq', d}));
+  if (selectedType === 'all' || selectedType === 'sq')  SQS.forEach(d => pool.push({t:'sq', d}));
+  if (selectedType === 'all' || selectedType === 'cq')  CQS.forEach(d => pool.push({t:'cq', d}));
+
+  const filtered = pool.filter(({d}) => {
+    if (selectedLine && d.lid !== selectedLine) return false;
+    if (bVal !== 'all' && !d.b.includes(bVal)) return false;
+    if (sVal && !JSON.stringify(d).toLowerCase().includes(sVal)) return false;
+    return true;
+  });
+
+  document.getElementById('panelTitle').textContent = selectedLine
+    ? `নির্বাচিত অংশের প্রশ্ন (${filtered.length}টি)`
+    : `সকল বোর্ড ও প্রতিষ্ঠান প্রশ্ন (${filtered.length}টি)`;
+
+  if (!filtered.length) {
+    box.innerHTML = `<div style="text-align:center;padding:32px;color:#64748b;">এই ফিল্টারে কোনো প্রশ্ন পাওয়া যায়নি। <strong>"সব প্রশ্ন দেখুন"</strong> বাটনে ক্লিক করুন।</div>`;
+    return;
+  }
+
+  const labels = ['ক', 'খ', 'গ', 'ঘ'];
+  box.innerHTML = filtered.map(({t, d}) => {
+    const fullBoard = expandBoard(d.b);
+    if (t === 'mcq') {
+      const picked = chosenMcq[d.id];
+      const opts = d.o.map((txt, i) => {
+        let cls = 'opt-item';
+        if (showAnswers && i === d.a) cls += ' is-right';
+        else if (picked !== undefined) {
+          if (i === d.a) cls += ' is-right';
+          else if (i === picked) cls += ' is-wrong';
+        }
+        return `<button class="${cls}" onclick="pickOpt(${d.id}, ${i})">(${labels[i]}) ${txt}</button>`;
+      }).join('');
+      return `
+        <div class="q-card t-mcq">
+          <div class="q-head">
+            <span class="q-badge b-mcq">বহুনির্বাচনি প্রশ্ন #${d.id}</span>
+            <span class="b-board">${fullBoard}</span>
+          </div>
+          ${d.u ? `<div class="uddipak">${d.u.replace(/\n/g,'<br>')}</div>` : ''}
+          <div class="q-prompt">${d.q}</div>
+          <div class="opts-grid">${opts}</div>
+          <div class="card-foot-links">
+            <button class="link-btn" onclick="jumpLine('${d.lid}')">মূল বইয়ের লাইন দেখুন ↗</button>
+          </div>
+        </div>
+      `;
+    }
+    if (t === 'sq') {
+      return `
+        <div class="q-card t-sq">
+          <div class="q-head">
+            <span class="q-badge b-sq">${d.kind} • ${d.id}</span>
+            <span class="b-board">${fullBoard}</span>
+          </div>
+          <div class="q-prompt">${d.q}</div>
+          <div class="ans-drawer" style="display:${(showAnswers || selectedLine) ? 'block' : 'none'}"><strong>নমুনা উত্তর:</strong>
+${d.a}</div>
+          <div class="card-foot-links">
+            <button class="link-btn" onclick="this.parentElement.previousElementSibling.style.display = this.parentElement.previousElementSibling.style.display==='none'?'block':'none'">উত্তর দেখুন/লুকান</button>
+            <button class="link-btn" onclick="jumpLine('${d.lid}')">মূল বইয়ের লাইন দেখুন ↗</button>
+          </div>
+        </div>
+      `;
+    }
+    return `
+      <div class="q-card t-cq">
+        <div class="q-head">
+          <span class="q-badge b-cq">${d.id} (প্রয়োগ ও উচ্চতর দক্ষতা)</span>
+          <span class="b-board">${fullBoard}</span>
+        </div>
+        <div class="uddipak">${d.u.replace(/\n/g,'<br>')}</div>
+        <div class="cq-sub">
+          <div class="cq-sub-q">${d.gq}</div>
+          <div class="cq-sub-a">${d.ga}</div>
+        </div>
+        <div class="cq-sub">
+          <div class="cq-sub-q">${d.hq}</div>
+          <div class="cq-sub-a">${d.ha}</div>
+        </div>
+        <div class="card-foot-links">
+          <button class="link-btn" onclick="jumpLine('${d.lid}')">মূল বইয়ের লাইন দেখুন ↗</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function buildPrintBank() {
+  const labels = ['ক', 'খ', 'গ', 'ঘ'];
+  let out = `<h2 style="border-bottom:2px solid #0b132b;padding-bottom:6px;margin-bottom:14px;">প্রত্যুপকার — সম্পূর্ণ বোর্ড ও প্রতিষ্ঠান প্রশ্নব্যাংক</h2>`;
+  out += `<h3 style="color:#dc2626;margin:12px 0 8px;">১. বহুনির্বাচনি প্রশ্ন ও উত্তর (৬০টি)</h3>`;
+  out += MCQS.map(m => `<p style="margin-bottom:6px;font-size:0.9rem;"><strong>${m.id}.</strong> ${m.u ? '<em>[উদ্দীপক: '+m.u+']</em> ':''}${m.q} [${expandBoard(m.b)}] — <strong>সঠিক উত্তর: (${labels[m.a]}) ${m.o[m.a]}</strong></p>`).join('');
+  out += `<h3 style="color:#059669;margin:16px 0 8px;">২. জ্ঞানমূলক ও অনুধাবনমূলক প্রশ্ন ও উত্তর (২৭টি)</h3>`;
+  out += SQS.map(s => `<p style="margin-bottom:8px;font-size:0.9rem;"><strong>[${s.kind} - ${s.id}]</strong> ${s.q} [${expandBoard(s.b)}]<br><em>উত্তর:</em> ${s.a}</p>`).join('');
+  out += `<h3 style="color:#d97706;margin:16px 0 8px;">৩. সৃজনশীল প্রশ্ন ও নমুনা উত্তর (৬ সেট)</h3>`;
+  out += CQS.map(c => `<div style="margin-bottom:14px;font-size:0.9rem;border-top:1px solid #cbd5e1;padding-top:8px;"><strong>${c.id} [${expandBoard(c.b)}]:</strong> ${c.u}<br><strong>${c.gq}</strong><br>${c.ga}<br><strong>${c.hq}</strong><br>${c.ha}</div>`).join('');
+  document.getElementById('printBank').innerHTML = out;
+}
+
+function openModal() { document.getElementById('customModal').classList.add('open'); }
+function closeModal() { document.getElementById('customModal').classList.remove('open'); }
+function saveCustom(printNow) {
+  const t = document.getElementById('inTitle').value.trim();
+  const s = document.getElementById('inSub').value.trim();
+  const o = document.getElementById('inOwner').value.trim();
+  const b = document.getElementById('inBadge').value.trim();
+  if (t) { document.getElementById('uiTitle').textContent = t; document.title = t; }
+  if (s) document.getElementById('uiSub').textContent = s;
+  if (b) document.getElementById('uiBadge').textContent = b;
+  if (o) document.getElementById('uiOwner').innerHTML = `সংকলন ও সম্পাদনা: <strong>${o}</strong>`;
+  closeModal();
+  if (printNow) setTimeout(() => window.print(), 250);
+}
+
+initBook();
+</script>
+</body>
+</html>
